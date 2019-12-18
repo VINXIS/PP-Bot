@@ -1,0 +1,6 @@
+node_modules
+[0-9]*.json
+config.json
+*.osu
+*.js
+*.txt
