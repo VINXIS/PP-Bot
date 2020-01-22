@@ -15,9 +15,11 @@ import (
 )
 
 func main() {
-	err := os.MkdirAll("./cache", 0755)
-	if err != nil {
-		fatal(err)
+	if _, err := os.Stat("./cache"); os.IsNotExist(err) {
+		err = os.MkdirAll("./cache", 0755)
+		if err != nil {
+			fatal(err)
+		}
 	}
 
 	// Get values
