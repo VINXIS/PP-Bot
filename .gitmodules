@@ -1,3 +1,6 @@
 [submodule "osu-tools/live/osu-tools"]
 	path = osu-tools/live/osu-tools
 	url = https://github.com/ppy/osu-tools.git
+[submodule "osu-tools/joz/osu-tools"]
+	path = osu-tools/joz/osu-tools
+	url = https://github.com/VINXIS/osu-tools.git
