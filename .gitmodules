@@ -4,3 +4,6 @@
 [submodule "osu-tools/joz/osu-tools"]
 	path = osu-tools/joz/osu-tools
 	url = https://github.com/VINXIS/osu-tools.git
+[submodule "osu-tools/delta/osu-tools"]
+	path = osu-tools/delta/osu-tools
+	url = https://github.com/VINXIS/osu-tools.git
