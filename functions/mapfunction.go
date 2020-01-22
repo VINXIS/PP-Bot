@@ -10,7 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	values "../values"
+	"../values"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/thehowl/go-osuapi"
 )

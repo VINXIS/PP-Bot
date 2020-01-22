@@ -7,14 +7,19 @@ import (
 	"runtime"
 	"syscall"
 
-	functions "./functions"
-	values "./values"
+	"./functions"
+	"./values"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/thehowl/go-osuapi"
 )
 
 func main() {
+	err := os.MkdirAll("./cache", 0755)
+	if err != nil {
+		fatal(err)
+	}
+
 	// Get values
 	values.GetConfig()
 
