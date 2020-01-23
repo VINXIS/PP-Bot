@@ -34,6 +34,6 @@ func NewPasteData(username, content string) PasteData {
 
 // Marshal returns the data into []byte
 func (d *PasteData) Marshal() []byte {
-	text := `{"sections":[{"name":"` + d.sections[0].name + `","contents":"` + strings.Replace(strings.Replace(d.sections[0].contents, "\n", "\\n", -1), "\r", "\\r", -1) + `"}]}`
+	text := `{"sections":[{"name":"` + d.sections[0].name + `","contents":"` + strings.Replace(strings.Replace(strings.Replace(d.sections[0].contents, "\n", "\\n", -1), "\r", "\\r", -1), "\"", "\\\"", -1) + `"}]}`
 	return []byte(text)
 }
