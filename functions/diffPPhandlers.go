@@ -19,6 +19,11 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		return
 	}
+	msg, err := s.ChannelMessageSend(m.ChannelID, "Obtaining diff calc for "+mapInfo+"...")
+	if err != nil {
+		return
+	}
+	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	defer removeFiles(mapInfo, osuType)
 	mapID := strings.Split(mapInfo, " ")[0]
 
@@ -40,23 +45,13 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if !strings.HasPrefix(mapInfo, "-1") {
-		args[2] = "./cache/" + mapInfo + ".osu"
+		args[2] = "./cache/" + strings.Split(mapInfo, " ")[0] + ".osu"
 	}
 
 	res, err := exec.Command("dotnet", args...).Output()
 	if err != nil || res[0] == 83 {
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
-	}
-
-	// Remove whack ass characters
-	for i, b := range res {
-		switch b {
-		case 187, 188, 196, 200, 201, 202, 203, 205:
-			res[i] = 45
-		case 179, 185, 186, 197, 204:
-			res[i] = 124
-		}
 	}
 
 	// Finish live diff calc here
@@ -175,6 +170,11 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		return
 	}
+	msg, err := s.ChannelMessageSend(m.ChannelID, "Obtaining pp calc for "+mapInfo+"...")
+	if err != nil {
+		return
+	}
+	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	defer removeFiles(mapInfo, osuType)
 
 	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", mapInfo + ".osu"}
@@ -215,7 +215,7 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if !strings.HasPrefix(mapInfo, "-1") {
-		args[3] = "./cache/" + mapInfo + ".osu"
+		args[3] = "./cache/" + strings.Split(mapInfo, " ")[0] + ".osu"
 	}
 
 	// Run command
@@ -235,10 +235,7 @@ func removeFiles(mapInfo, osuType string) {
 	}
 
 	mapID := strings.Split(mapInfo, " ")[0]
-	switch osuType {
-	case "delta":
-		os.Remove("./cache/graph_" + mapID + ".txt")
-	case "joz":
+	if osuType == "joz" {
 		os.Remove(mapID + "aimcontrol.txt")
 		os.Remove(mapID + "fingercontrol.txt")
 		os.Remove(mapID + "jumpaim.txt")

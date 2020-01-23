@@ -25,6 +25,12 @@ func main() {
 		}
 	}
 
+	// Change console type 
+	_, err = exec.Command("chcp", "65001").Output()
+	if err != nil {
+		fatal(err)
+	}
+
 	// Build osu-tools
 	log.Println("Building osu-tools...")
 	_, err = exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release").Output()
@@ -79,6 +85,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				go functions.MapDifficultyHandler(s, m)
 			}
 		case values.Userregex.MatchString(m.Content): // Run user profile
+			go functions.UserHandler(s, m)
 		case values.Runregex.MatchString(m.Content): // Run user list
 		case values.Listregex.MatchString(m.Content): // Show list
 		case values.Whoregex.MatchString(m.Content): // See user IDs and who has what list

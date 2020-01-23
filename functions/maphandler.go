@@ -79,7 +79,7 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 		}
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
-		err = ioutil.WriteFile("./cache/"+mapInfo+".osu", body, 0644)
+		err = ioutil.WriteFile("./cache/"+strconv.Itoa(beatmapid)+".osu", body, 0644)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Unable to create local file from discord attachment.")
 			return "", "", errors.New("unable to create local file")
