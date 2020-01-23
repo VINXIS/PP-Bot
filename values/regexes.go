@@ -40,11 +40,28 @@ var (
 	// BeatmapIDregex gets the beatmap id from a .osu file
 	BeatmapIDregex = regexp.MustCompile(`BeatmapID:(.*)(\r|\n)`)
 
-	/*Spamfileregex = regexp.MustCompile(`\d*(jumpaim|speed|stamina|streamaim|aimcontrol|fingercontrol|values|test).txt`)
-	Modregex      = regexp.MustCompile(`-m\s+((?:EZ|NF|HT|HR|DT|NC|HD|FL|SO)+)`)
-	Skillregex    = regexp.MustCompile(`-s\s+(Aim\s*Control|Jump\s*Aim|Stream\s*Aim|Finger\s*Control|Speed|Stamina)`)
-	Timeregex     = regexp.MustCompile(`-r\s+(\d+)\s+(\d+)`)
-	Testregex     = regexp.MustCompile(`-t`)
-	PPregex       = regexp.MustCompile(`-pp`)
-	Jozregex      = regexp.MustCompile(`-j`)*/
+	// Spamfileregex checks for the spam files created by the custom osu-tools
+	Spamfileregex = regexp.MustCompile(`\d*(jumpaim|speed|stamina|streamaim|aimcontrol|fingercontrol|values|test).txt`)
+
+	// Modregex looks for mods
+	Modregex = regexp.MustCompile(`(?i)-m\s+((?:EZ|NF|HT|HR|DT|NC|HD|FL|SO)+)`)
+	// Accregex looks for acc
+	Accregex = regexp.MustCompile(`-a\s+((\d|\.)+)`)
+	// Comboregex looks for combo
+	Comboregex = regexp.MustCompile(`-c\s+(\d+)`)
+	// Missregex looks for misses
+	Missregex = regexp.MustCompile(`-x\s+(\d+)`)
+	// Goodregex looks for 100s
+	Goodregex = regexp.MustCompile(`-100\s+(\d+)`)
+	// Mehregex looks for 50s
+	Mehregex = regexp.MustCompile(`-50\s+(\d+)`)
+	// Skillregex looks for a specific skill
+	Skillregex = regexp.MustCompile(`(?i)-s\s+(Aim\s*Control|Jump\s*Aim|Stream\s*Aim|Finger\s*Control|Speed|Stamina)`)
+	// Timeregex looks for a specific time range for the graphs
+	Timeregex = regexp.MustCompile(`-r\s+(\d+)\s+(\d+)`)
+
+	// Jozregex will run joz instead of delta
+	Jozregex = regexp.MustCompile(`-j`)
+	// Liveregex will run live instead of delta
+	Liveregex = regexp.MustCompile(`-l`)
 )

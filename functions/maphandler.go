@@ -1,11 +1,9 @@
 package functions
 
 import (
-	"fmt"
-	"io"
+	"errors"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,15 +15,19 @@ import (
 )
 
 // MapHandler handles with map commands
-func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, string, error) {
 	var (
 		beatmapid int
-		skill     string = "aimcontrol"
-		osuType   string = "joz"
-		mapinfo   string
+		osuType   string = "delta"
+		mapInfo   string
 	)
 
-	// See if a specific skill was requested
+	// osuType
+	if values.Jozregex.MatchString(m.Content) {
+		osuType = "joz"
+	} else if values.Liveregex.MatchString(m.Content) {
+		osuType = "live"
+	}
 
 	// Get beatmap info if a map was linked/attached
 	if values.Mapregex.MatchString(m.Content) { // If a map was linked
@@ -37,10 +39,10 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			})
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, "There was an issue in fetching beatmap info from the osu! API! Try again and/or see if osu! is down here: https://status.ppy.sh/")
-				return
+				return "", "", errors.New("no osu!api response")
 			}
 			beatmap := beatmaps[0]
-			mapinfo = submatches[5] + ": " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
+			mapInfo = submatches[5] + " " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
 		} else {
 			switch submatches[2] {
 			case "b", "beatmaps":
@@ -50,10 +52,10 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				})
 				if err != nil {
 					s.ChannelMessageSend(m.ChannelID, "There was an issue in fetching beatmap info from the osu! API! Try again and/or see if osu! is down here: https://status.ppy.sh/")
-					return
+					return "", "", errors.New("no osu!api response")
 				}
 				beatmap := beatmaps[0]
-				mapinfo = submatches[3] + ": " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
+				mapInfo = submatches[3] + " " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
 			case "s":
 				setid, _ := strconv.Atoi(submatches[3])
 				beatmaps, err := values.OsuAPI.GetBeatmaps(osuapi.GetBeatmapsOpts{
@@ -61,43 +63,39 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				})
 				if err != nil {
 					s.ChannelMessageSend(m.ChannelID, "There was an issue in fetching beatmap info from the osu! API! Try again and/or see if osu! is down here: https://status.ppy.sh/")
-					return
+					return "", "", errors.New("no osu!api response")
 				}
 				sort.Slice(beatmaps, func(i, j int) bool { return beatmaps[i].DifficultyRating > beatmaps[j].DifficultyRating })
 				beatmap := beatmaps[0]
 				beatmapid = beatmap.BeatmapID
-				mapinfo = strconv.Itoa(beatmapid) + ": " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
+				mapInfo = strconv.Itoa(beatmapid) + " " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
 			}
 		}
 
 		resp, err := http.Get("https://osu.ppy.sh/osu/" + strconv.Itoa(beatmapid))
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Unable to reach .osu file.")
-			resp.Body.Close()
-			return
+			return "", "", errors.New("unable to reach .osu file")
 		}
-		out, err := os.Create("./cache/" + strconv.Itoa(beatmapid) + ".osu")
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		err = ioutil.WriteFile("./cache/"+mapInfo+".osu", body, 0644)
 		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "Unable to create .osu file.")
-			resp.Body.Close()
-			return
+			s.ChannelMessageSend(m.ChannelID, "Unable to create local file from discord attachment.")
+			return "", "", errors.New("unable to create local file")
 		}
-		io.Copy(out, resp.Body)
-		resp.Body.Close()
-		out.Close()
 	} else { // If a map was attached
 		resp, err := http.Get(m.Attachments[0].URL)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Unable to reach discord attachment URL.")
-			resp.Body.Close()
-			return
+			return "", "", errors.New("unable to reach discord attachment URL")
 		}
+		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Unable to read from response.")
-			resp.Body.Close()
-			return
+			return "", "", errors.New("unable to read from response")
 		}
 		stringbody := strings.Split(string(body), "\n")
 		var artist, title, version string = "", "", ""
@@ -116,34 +114,19 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 		}
-		if artist != "" && title != "" && version != "" {
-			mapinfo = strconv.Itoa(beatmapid) + ": " + artist + " - " + title + " [" + version + "]"
+
+		if beatmapid == 0 {
+			beatmapid = -1
 		}
 
-		file, err := os.Create(m.Attachments[0].Filename)
-		_, err = io.Copy(file, resp.Body)
+		mapInfo = strconv.Itoa(beatmapid) + " " + artist + " - " + title + " [" + version + "]"
+
+		err = ioutil.WriteFile("./"+mapInfo+".osu", body, 0644)
 		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "Unable create local file from discord attachment.")
-			resp.Body.Close()
-			file.Close()
-			return
+			s.ChannelMessageSend(m.ChannelID, "Unable to create local file from discord attachment.")
+			return "", "", errors.New("unable to create local file")
 		}
-
-		resp.Body.Close()
-		file.Close()
 	}
-	fmt.Println(skill)
-	fmt.Println(osuType)
-	fmt.Println(mapinfo)
 
-}
-
-// MapDifficultyHandler handles with the difficulty graph of a map
-func MapDifficultyHandler() {
-
-}
-
-// MapPPHandler handles with the pp of a map
-func MapPPHandler() {
-
+	return osuType, mapInfo, nil
 }
