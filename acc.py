@@ -4,18 +4,17 @@ import sys
 import os
 
 args = sys.argv
-beatmapid = args[1]
+mapInfo = args[1]
 difference = float(args[4])
-mapinfo = args[5]
-ticks = float(args[6])
+ticks = float(args[5])
 
 accVals = []
 aimVals = []
 tapVals = []
 accppVals = []
 ppVals = []
-if os.path.exists(beatmapid+'ppVals.txt'):
-    for t in open(beatmapid+'ppVals.txt').read().split('\n'):
+if os.path.exists(mapInfo+'ppVals.txt'):
+    for t in open(mapInfo+'ppVals.txt').read().split('\n'):
         if '(' in t:
             acc, aim, tap, accpp, pp = t.strip('()').split(',')
             accVals.append(float(acc))
@@ -29,11 +28,11 @@ plt.plot(accVals, tapVals, label='tap')
 plt.plot(accVals, accppVals, label='acc')
 plt.plot(accVals, ppVals, label='PP')
 
-plt.title(mapinfo)
+plt.title(mapInfo)
 plt.xlabel('acc')
 plt.ylabel('PP')
 plt.legend()
 plt.xlim(float(args[2]), float(args[3]))
 plt.xticks(np.arange(float(args[2]), float(args[3]), ticks))
 plt.grid(b=True, which='both')
-plt.savefig(beatmapid + '.png', bbox_inches='tight')
+plt.savefig(mapInfo + '.png', bbox_inches='tight')

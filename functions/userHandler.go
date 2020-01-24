@@ -54,6 +54,7 @@ func UserHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		return
 	}
+	log.Println(m.Author.String() + " has requested a profile calc for " + user.Username + ".")
 	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	timeTaken := time.Now()
 

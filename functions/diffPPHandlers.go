@@ -3,6 +3,7 @@ package functions
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -22,6 +23,7 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		return
 	}
+	log.Println(m.Author.String() + " has requested a difficulty calc for " + mapInfo + ".")
 	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	defer removeFiles(mapInfo, osuType)
 	mapID := strings.Split(mapInfo, " ")[0]
@@ -153,7 +155,7 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	img, err := ioutil.ReadFile("./" + mapID + ".png")
 	imgBytes := bytes.NewBuffer(img)
 	s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-		Content: "```\n" + strings.ToValidUTF8(string(res), "") + "```",
+		Content: m.Author.Mention() + "\n```\n" + strings.ToValidUTF8(string(res), "") + "```",
 		Files: []*discordgo.File{
 			&discordgo.File{
 				Name:   mapID + ".png",
@@ -173,6 +175,7 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		return
 	}
+	log.Println(m.Author.String() + " has requested a pp calc for " + mapInfo + ".")
 	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	defer removeFiles(mapInfo, osuType)
 
@@ -225,5 +228,5 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send pp value and remove files
-	s.ChannelMessageSend(m.ChannelID, "```\n"+string(res)+"```")
+	s.ChannelMessageSend(m.ChannelID, m.Author.Mention() + "\n```\n"+string(res)+"```")
 }

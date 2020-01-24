@@ -25,7 +25,16 @@ func main() {
 		}
 	}
 
-	// Change console type 
+	// Create lists folder
+	_, err = os.Stat("./lists")
+	if os.IsNotExist(err) {
+		err = os.MkdirAll("./lists", 0755)
+		if err != nil {
+			fatal(err)
+		}
+	}
+
+	// Change console type
 	_, err = exec.Command("chcp", "65001").Output()
 	if err != nil {
 		fatal(err)
@@ -77,7 +86,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		switch {
 		case values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Add map to list
 		case values.Moveregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Move map from 1 list to another
-		case values.Accgraphregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Get accuracy graph for a map
+		case values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename)): // Get accuracy graph for a map
+			go functions.AccGraphHandler(s, m)
 		case values.Mapregex.MatchString(m.Content), len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename): // Get map SR / PP
 			if values.PPregex.MatchString(m.Content) {
 				go functions.MapPPHandler(s, m)
