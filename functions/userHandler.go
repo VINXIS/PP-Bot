@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -106,4 +108,21 @@ func UserHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+"\n<"+pasteResult.Link+">\nUser calc for **"+user.Username+"** done in "+time.Now().Sub(timeTaken).String())
+
+	// Remove filename spam
+	var fileNames []string
+
+	err = filepath.Walk("./", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		fileNames = append(fileNames, path)
+		return nil
+	})
+
+	for _, fileName := range fileNames {
+		if values.Spamfileregex.MatchString(fileName) {
+			os.Remove(fileName)
+		}
+	}
 }

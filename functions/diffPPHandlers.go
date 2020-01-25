@@ -2,6 +2,7 @@ package functions
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os/exec"
@@ -179,7 +180,7 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	defer removeFiles(mapInfo, osuType)
 
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", mapInfo + ".osu"}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", "./" + mapInfo + ".osu"}
 
 	// Get score specs (acc, combo, e.t.c)
 	if values.Modregex.MatchString(m.Content) {
@@ -222,11 +223,12 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Run command
 	res, err := exec.Command("dotnet", args...).Output()
-	if err != nil {
+	if err != nil || res[0] == 83 {
+		fmt.Println(exec.Command("dotnet", args...).String())
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
 
 	// Send pp value and remove files
-	s.ChannelMessageSend(m.ChannelID, m.Author.Mention() + "\n```\n"+string(res)+"```")
+	s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+"\n```\n"+string(res)+"```")
 }
