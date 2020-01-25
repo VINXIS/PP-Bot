@@ -1,11 +1,7 @@
 package functions
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -85,44 +81,24 @@ func UserHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// Send paste data
-	pasteData := structs.NewPasteData(user.Username, string(res))
-	req, _ := http.NewRequest("POST", "https://api.paste.ee/v1/pastes?key="+values.Conf.PasteAPIKey, bytes.NewBuffer(pasteData.Marshal()))
-	req.Header.Set("Content-Type", "application/json")
+	go sendPaste(s, m, structs.NewPasteData(user.Username, string(res)), "User calc for **"+user.Username+"** done in "+time.Now().Sub(timeTaken).String())
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		s.ChannelMessageSend(m.ChannelID, "No response found from paste.ee.")
-	}
-	defer resp.Body.Close()
+	if osuType == "joz" {
+		// Remove filename spam
+		var fileNames []string
 
-	// Parse result
-	bod, _ := ioutil.ReadAll(resp.Body)
-	pasteResult := structs.PasteResult{}
-	json.Unmarshal(bod, &pasteResult)
-	if !pasteResult.Success {
-		s.ChannelMessageSend(m.ChannelID, "An error occurred in sending the user calc to paste.ee!")
-		log.Println(string(bod))
-		return
-	}
+		err = filepath.Walk("./", func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			fileNames = append(fileNames, path)
+			return nil
+		})
 
-	s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+"\n<"+pasteResult.Link+">\nUser calc for **"+user.Username+"** done in "+time.Now().Sub(timeTaken).String())
-
-	// Remove filename spam
-	var fileNames []string
-
-	err = filepath.Walk("./", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		fileNames = append(fileNames, path)
-		return nil
-	})
-
-	for _, fileName := range fileNames {
-		if values.Spamfileregex.MatchString(fileName) {
-			os.Remove(fileName)
+		for _, fileName := range fileNames {
+			if values.Spamfileregex.MatchString(fileName) {
+				os.Remove(fileName)
+			}
 		}
 	}
 }

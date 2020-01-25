@@ -1,8 +1,17 @@
 package functions
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 	"strings"
+
+	"../structs"
+	"../values"
+	"github.com/bwmarrin/discordgo"
 )
 
 // accGeneration returns 300s, 100s, and misses basde
@@ -78,4 +87,31 @@ func removeFiles(mapInfo, osuType string) {
 	if mapInfo != "" {
 		removeFiles("", osuType)
 	}
+}
+
+// sendPaste sends data to paste.ee
+func sendPaste(s *discordgo.Session, m *discordgo.MessageCreate, pasteData structs.PasteData, text string) {
+	// Send paste data
+	req, _ := http.NewRequest("POST", "https://api.paste.ee/v1/pastes?key="+values.Conf.PasteAPIKey, bytes.NewBuffer(pasteData.Marshal()))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "No response found from paste.ee.")
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parse result
+	bod, _ := ioutil.ReadAll(resp.Body)
+	pasteResult := structs.PasteResult{}
+	json.Unmarshal(bod, &pasteResult)
+	if !pasteResult.Success {
+		s.ChannelMessageSend(m.ChannelID, "An error occurred in sending the user calc to paste.ee!")
+		log.Println(string(bod))
+		return
+	}
+
+	s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+"\n<"+pasteResult.Link+">\n"+text)
 }
