@@ -146,14 +146,7 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if values.Accregex.MatchString(m.Content) {
-		accVal, err := strconv.ParseFloat(values.Accregex.FindStringSubmatch(m.Content)[1], 64)
-		if err == nil && accVal > 0 && accVal < 100 {
-			args = append(args, "-a", values.Accregex.FindStringSubmatch(m.Content)[1])
-			score.Accuracy = accVal
-			score.UseAccuracy = true
-		}
-	} else {
+	if !values.Accregex.MatchString(m.Content) {
 		if values.Goodregex.MatchString(m.Content) {
 			goodVal, err := strconv.Atoi(values.Goodregex.FindStringSubmatch(m.Content)[1])
 			if err == nil && goodVal > 0 {
@@ -168,6 +161,13 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				score.Mehs = mehVal
 				args = append(args, "-M", values.Mehregex.FindStringSubmatch(m.Content)[1])
 			}
+		}
+	} else {
+		accVal, err := strconv.ParseFloat(values.Accregex.FindStringSubmatch(m.Content)[1], 64)
+		if err == nil && accVal > 0 && accVal < 100 {
+			args = append(args, "-a", values.Accregex.FindStringSubmatch(m.Content)[1])
+			score.Accuracy = accVal
+			score.UseAccuracy = true
 		}
 	}
 

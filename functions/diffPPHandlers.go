@@ -190,15 +190,15 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if values.Accregex.MatchString(m.Content) {
-		args = append(args, "-a", values.Accregex.FindStringSubmatch(m.Content)[1])
-	} else {
+	if !values.Accregex.MatchString(m.Content) {
 		if values.Goodregex.MatchString(m.Content) {
 			args = append(args, "-G", values.Goodregex.FindStringSubmatch(m.Content)[1])
 		}
 		if values.Mehregex.MatchString(m.Content) {
 			args = append(args, "-M", values.Mehregex.FindStringSubmatch(m.Content)[1])
 		}
+	} else {
+		args = append(args, "-a", values.Accregex.FindStringSubmatch(m.Content)[1])
 	}
 
 	if values.Comboregex.MatchString(m.Content) {
