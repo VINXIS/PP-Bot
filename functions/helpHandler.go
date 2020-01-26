@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"log"
 	"regexp"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 
 // HelpHandler handles the help function
 func HelpHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	log.Println(m.Author.String() + " has requested help.")
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    "PP Bot functions",

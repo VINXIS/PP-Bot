@@ -252,6 +252,8 @@ func ListMoveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	log.Println(m.Author.String() + " has requested to move a map.")
+
 	var (
 		err                      error
 		num                      int
@@ -358,6 +360,7 @@ func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	val := values.Delregex.FindStringSubmatch(m.Content)[1]
 	if val == "-all" { // Delete a sublist or the whole list
+		log.Println(m.Author.String() + " has requested to delete a list/sublist.")
 		if values.Optionregex.MatchString(m.Content) { // If they want to only delete a sublist
 			subListName := values.Optionregex.FindStringSubmatch(m.Content)[1]
 			for i, subList := range list.Lists {
@@ -410,7 +413,7 @@ func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "Completely removed "+m.Author.Username+"'s lists!")
 		return
 	}
-
+	log.Println(m.Author.String() + " has requested to delete a map.")
 	// If they only want to delete a score
 	index, _ := strconv.Atoi(val)
 	index--
@@ -675,6 +678,8 @@ func ListImportHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "User already has a list!")
 		return
 	}
+
+	log.Println(m.Author.String() + " has requested to import a list.")
 
 	// Get legacy list's data
 	res, err := http.Get(m.Attachments[0].URL)
