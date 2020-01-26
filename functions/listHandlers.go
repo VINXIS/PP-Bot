@@ -89,7 +89,7 @@ func ListHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Add to table and write to string
 		table.AppendBulk(tableData)
 		table.Render()
-		mainText += subList.Name + "\n" + builder.String() + "\n\n"
+		mainText += "List: " + subList.Name + "\n" + builder.String() + "\n\n"
 	}
 
 	go sendPaste(s, m, structs.NewPasteData(m.Author.Username+"'s List", mainText), "When deleting, make sure to keep check of their NUM to make sure you do not accidentally delete the wrong score!")
@@ -235,6 +235,116 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	s.ChannelMessageSend(m.ChannelID, "Score saved! Here's the pp value of the given score based on the pp system given:\n```"+string(res)+"```")
+}
+
+// ListMoveHandler lets the move scores between lists
+func ListMoveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if !values.Numregex.MatchString(m.Content) || !values.Newregex.MatchString(m.Content) {
+		s.ChannelMessageSend(m.ChannelID, "Please provide index number and target list!")
+		return
+	}
+
+	// Get file
+	list, new := structs.GetList(m.Author)
+
+	if new {
+		s.ChannelMessageSend(m.ChannelID, "Could not find a list with your user ID!")
+		return
+	}
+
+	var (
+		err                      error
+		num                      int
+		oldListName, newListName string
+	)
+	if values.Optionregex.MatchString(m.Content) {
+		oldListName = values.Optionregex.FindStringSubmatch(m.Content)[1]
+	}
+
+	if values.Numregex.MatchString(m.Content) {
+		oldListName = strings.Replace(oldListName, values.Numregex.FindStringSubmatch(m.Content)[0], "", -1)
+		num, _ = strconv.Atoi(values.Numregex.FindStringSubmatch(m.Content)[1])
+		num--
+	}
+
+	if values.Newregex.MatchString(m.Content) {
+		oldListName = strings.Replace(oldListName, values.Newregex.FindStringSubmatch(m.Content)[0], "", -1)
+		newListName = values.Newregex.FindStringSubmatch(m.Content)[1]
+	}
+
+	if oldListName == "" {
+		oldListName = "Untitled"
+	} else {
+		oldListName = strings.TrimSpace(oldListName)
+	}
+
+	var (
+		oldIndex, newIndex int = -1, -1
+	)
+
+	for i, subList := range list.Lists {
+		if strings.ToLower(subList.Name) == strings.ToLower(oldListName) {
+			oldIndex = i
+			if num > len(subList.Scores)-1 {
+				s.ChannelMessageSend(m.ChannelID, "Value provided is out of bounds!")
+				return
+			}
+		} else if strings.ToLower(subList.Name) == strings.ToLower(newListName) {
+			newIndex = i
+		}
+	}
+
+	if oldIndex == -1 { // No list found to move the score from
+		s.ChannelMessageSend(m.ChannelID, "No list with the given name found!")
+		return
+	}
+
+	// Move score
+	if newIndex == -1 { // Create new list
+		list.Lists = append(list.Lists, structs.SubList{
+			Name: newListName,
+			Scores: []structs.Score{
+				list.Lists[oldIndex].Scores[num],
+			},
+		})
+	} else {
+		score := list.Lists[oldIndex].Scores[num]
+		for _, listScore := range list.Lists[newIndex].Scores { // Check if score already exists there
+			if listScore.MapInfo == score.MapInfo &&
+				listScore.BeatmapID == score.BeatmapID &&
+				listScore.Accuracy == score.Accuracy &&
+				listScore.Goods == score.Goods &&
+				listScore.Mehs == score.Mehs &&
+				listScore.Combo == score.Combo &&
+				listScore.Misses == score.Misses &&
+				listScore.Mods == score.Mods {
+				s.ChannelMessageSend(m.ChannelID, "Score already exists for the list given!")
+				return
+			}
+		}
+		list.Lists[newIndex].Scores = append(list.Lists[newIndex].Scores, score)
+	}
+
+	// Remove from old list, delete list if that was the only score there
+	if len(list.Lists[oldIndex].Scores) == 1 {
+		list.Lists = append(list.Lists[:oldIndex], list.Lists[oldIndex+1:]...)
+	} else {
+		list.Lists[oldIndex].Scores = append(list.Lists[oldIndex].Scores[:num], list.Lists[oldIndex].Scores[num+1:]...)
+	}
+
+	// Save updated list
+	b, err := json.Marshal(list)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error parsing list.")
+		return
+	}
+	err = ioutil.WriteFile("./lists/"+m.Author.ID+".json", b, 0644)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error saving list to file.")
+		return
+	}
+
+	s.ChannelMessageSend(m.ChannelID, "Score moved from `"+oldListName+"` to `"+newListName+"`!")
 }
 
 // ListDeleteHandler lets the user delete a map from a sublist

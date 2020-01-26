@@ -84,7 +84,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 		// Check type of command, delete otherwise
 		switch {
-		case values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Add map to list
+		case values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Add score to list
 			go functions.ListAddHandler(s, m)
 		case values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename)): // Get accuracy graph for a map
 			go functions.AccGraphHandler(s, m)
@@ -100,6 +100,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			go functions.ListRunHandler(s, m)
 		case values.Listregex.MatchString(m.Content): // Show list
 			go functions.ListHandler(s, m)
+		case values.Moveregex.MatchString(m.Content): // Move score between lists
+			go functions.ListMoveHandler(s, m)
 		case values.Delregex.MatchString(m.Content): // Delete map from list
 			go functions.ListDeleteHandler(s, m)
 		case values.Whoregex.MatchString(m.Content): // See user IDs and who has what list

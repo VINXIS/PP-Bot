@@ -76,8 +76,12 @@ var (
 	Accrangeregex = regexp.MustCompile(`-a\s+(\d+)\s+(\d+)`)
 	// Timeregex looks for a specific time range for the graphs
 	Timeregex = regexp.MustCompile(`-r\s+(\d+)\s+(\d+)`)
-	// Optionregex looks for a specific list to run
+	// Optionregex looks for a specific list to run (also used as old list name for listmovehandler)
 	Optionregex = regexp.MustCompile(`-o\s+(.+)`)
+	// Numregex looks for a score index of a sublist
+	Numregex = regexp.MustCompile(`-n\s+(\d+)`)
+	// Newregex looks for the new list name
+	Newregex = regexp.MustCompile(`-t\s+(.+)`)
 
 	// Jozregex will run joz instead of delta
 	Jozregex = regexp.MustCompile(`-j`)
