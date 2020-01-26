@@ -109,17 +109,10 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 			if values.Versionregex.MatchString(line) {
 				version = values.Versionregex.FindStringSubmatch(line)[1]
 			}
-			if values.BeatmapIDregex.MatchString(line) {
-				beatmapid, _ = strconv.Atoi(values.BeatmapIDregex.FindStringSubmatch(line)[1])
-			}
 
 		}
 
-		if beatmapid == 0 {
-			beatmapid = -1
-		}
-
-		mapInfo = values.Invalidregex.ReplaceAllString(strconv.Itoa(beatmapid) + " " + artist + " - " + title + " [" + version + "]", "")
+		mapInfo = values.Invalidregex.ReplaceAllString(strconv.Itoa(-1) + " " + artist + " - " + title + " [" + version + "]", "")
 
 		err = ioutil.WriteFile("./"+mapInfo+".osu", body, 0644)
 		if err != nil {
