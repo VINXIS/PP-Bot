@@ -2,7 +2,6 @@ package functions
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os/exec"
@@ -224,7 +223,6 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Run command
 	res, err := exec.Command("dotnet", args...).Output()
 	if err != nil || res[0] == 83 {
-		fmt.Println(exec.Command("dotnet", args...).String())
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
