@@ -7,7 +7,7 @@ var (
 	OutsideServerregex = regexp.MustCompile(`-g`)
 
 	// Addregex checks if a command was made to add a score to their list
-	Addregex = regexp.MustCompile(`!add`)
+	Addregex = regexp.MustCompile(`!add\s+(.+)`)
 	// Accgraphregex checks if a command was made to create an acc graph for the map
 	Accgraphregex = regexp.MustCompile(`!acc`)
 	// Runregex checks if a command was made to run their list
@@ -18,6 +18,8 @@ var (
 	Importregex = regexp.MustCompile(`!import`)
 	// Whoregex checks if a command was made to show who has a list
 	Whoregex = regexp.MustCompile(`!wholist`)
+	// Moveregex checks if a command was made to move a score between lists
+	Moveregex = regexp.MustCompile(`!move\s+(.+)`)
 	// Delregex checks if a command was made to delete a score from their list
 	Delregex = regexp.MustCompile(`!(d(el(ete)?)?|r(emove)?)\s+(\d+|-all)`)
 
@@ -51,6 +53,8 @@ var (
 
 	// Spamfileregex checks for the spam files created by the custom osu-tools
 	Spamfileregex = regexp.MustCompile(`\d*(jumpaim|speed|stamina|streamaim|aimcontrol|fingercontrol|values|test).txt`)
+	// Invalidregex checks for invalid characters for filenames
+	Invalidregex = regexp.MustCompile(`(<|>|\||:|"|\\|\/|\?|\*)`)
 
 	// Modregex looks for mods
 	Modregex = regexp.MustCompile(`(?i)-m\s+((?:EZ|NF|HT|HR|DT|NC|HD|FL|SO)+)`)

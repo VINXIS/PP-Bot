@@ -119,7 +119,7 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 			beatmapid = -1
 		}
 
-		mapInfo = strconv.Itoa(beatmapid) + " " + artist + " - " + title + " [" + version + "]"
+		mapInfo = values.Invalidregex.ReplaceAllString(strconv.Itoa(beatmapid) + " " + artist + " - " + title + " [" + version + "]", "")
 
 		err = ioutil.WriteFile("./"+mapInfo+".osu", body, 0644)
 		if err != nil {
