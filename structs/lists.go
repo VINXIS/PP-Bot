@@ -1,6 +1,10 @@
 package structs
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -27,4 +31,50 @@ type Score struct {
 	Misses      int
 	Mods        string
 	UseAccuracy bool
+}
+
+// PPScore is an extension of Score where the PP is also stored
+type PPScore struct {
+	Score
+	PP float64
+}
+
+// GetList gets either a new list for the user, or the list saved for the user, the bool tells if it is new or not.
+func GetList(u *discordgo.User) (List, bool) {
+	newList := List{
+		User: *u,
+		Lists: []SubList{
+			SubList{
+				Name: "Untitled",
+			},
+		},
+	}
+	list := newList
+
+	_, err := os.Stat("./lists/" + u.ID + ".json")
+	if err != nil {
+		return newList, true
+	}
+
+	f, err := ioutil.ReadFile("./lists/" + u.ID + ".json")
+	if err != nil {
+		return newList, true
+	}
+
+	err = json.Unmarshal(f, &list)
+	if err != nil {
+		return newList, true
+	}
+
+	return list, false
+}
+
+// LegacyScore is the structure of the old list format's score
+type LegacyScore struct {
+	MapInfo   string  `json:"mapinfo"`
+	BeatmapID int     `json:"beatmapid"`
+	Accuracy  float64 `json:"accuracy"`
+	Combo     int     `json:"combo"`
+	Misses    int     `json:"misses"`
+	Mods      string  `json:"mods"`
 }

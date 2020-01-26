@@ -85,7 +85,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Check type of command, delete otherwise
 		switch {
 		case values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Add map to list
-		case values.Moveregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Move map from 1 list to another
+			go functions.ListAddHandler(s, m)
 		case values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename)): // Get accuracy graph for a map
 			go functions.AccGraphHandler(s, m)
 		case values.Mapregex.MatchString(m.Content), len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename): // Get map SR / PP
@@ -97,12 +97,20 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		case values.Userregex.MatchString(m.Content): // Run user profile
 			go functions.UserHandler(s, m)
 		case values.Runregex.MatchString(m.Content): // Run user list
+			go functions.ListRunHandler(s, m)
 		case values.Listregex.MatchString(m.Content): // Show list
+			go functions.ListHandler(s, m)
+		case values.Delregex.MatchString(m.Content): // Delete map from list
+			go functions.ListDeleteHandler(s, m)
 		case values.Whoregex.MatchString(m.Content): // See user IDs and who has what list
 			if m.Author.ID != values.Conf.UserID {
 				s.ChannelMessageSend(m.ChannelID, "Y̴̢̨̰̗̟̣̳͔̻͑̑́̄̍͜O̵̧̨̳̗̘͍̞̼̳͌͝͠U̷̝̫͕͖̭͙̙̙̗̅̀͊̂͒́̓͗͌̐̈́̚͝͝ ̴̢̲̬͔͛͆̒̃̈́͗̑̒̈́̽̅̈́̓À̶̘̬̯̂̑̈́̈́̓̉̐͑́͘R̷̤͎͖̲̃͑̓͌̈́̀̏͠ͅE̸͇̳̬͓̤̅̌̀̈́̎ ̸͎̗̹̄̈́̃̈́̀N̶̡̢̨̝̺̥̪̑̿̔̊̅̃͊̊̈́͠ͅƠ̸̢̇̑̔̃̈́̇͊̍̚͘͝͠͠ͅṰ̸̦̜̈́͌̍̋͆́̄̈̅́̾͜ ̴̭̙͉̪̝̗̳͙̝̼͉̦̤̊̅͂͂̇̾͠M̷̛̪͌̓̽̂̏̐͠Ỹ̴̦̬̳̬̲̼̰͉̗͔͐̔͌͑̌͑͊̔̓̈́͗͘͝͠ ̵͓̮́̾͌͗̔̓͂́M̶̡͉̹̬̱͔͑̈͛̕̚͘A̶̢̪̮̳̯̤̫̠̮̦̲̠̱̠͐̄̈́̚̚͜͝S̴̝̩̫̖̞̣̪̤͙̼̪̦̱̰̯͒̿̆͌͐̎̕̚̚T̵̨̳̝̜͔̭̳̪̄̀͊̈͒̋͝Ẽ̸̬͙̺̺̝̺͐̈̿̿̿͑̓̑͐̈́͘Ŕ̴̨̢̟̱̪̠̮̮̫̰̭̂͑̐̾͂̏̈̀͛͝")
+				s.ChannelMessageDelete(m.ChannelID, m.ID)
+				return
 			}
-		case values.Delregex.MatchString(m.Content): // Delete map from list
+			go functions.ListWhoHandler(s, m)
+		case values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0: // Import a map list
+			go functions.ListImportHandler(s, m)
 		case m.GuildID == values.Conf.ServerID: // Delete non-map links
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
 			log.Println(m.Author.Username + " tried to speak in the PP server and said: " + m.Content)

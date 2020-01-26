@@ -84,7 +84,7 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 			s.ChannelMessageSend(m.ChannelID, "Unable to create local file from discord attachment.")
 			return "", "", errors.New("unable to create local file")
 		}
-	} else { // If a map was attached
+	} else if len(m.Attachments) > 0 { // If a map was attached
 		resp, err := http.Get(m.Attachments[0].URL)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Unable to reach discord attachment URL.")
@@ -126,6 +126,9 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 			s.ChannelMessageSend(m.ChannelID, "Unable to create local file from discord attachment.")
 			return "", "", errors.New("unable to create local file")
 		}
+	} else {
+		s.ChannelMessageSend(m.ChannelID, "Please provide a map!")
+		return "", "", errors.New("no map provided")
 	}
 
 	return osuType, mapInfo, nil

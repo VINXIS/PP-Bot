@@ -24,7 +24,7 @@ func AccGraphHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Create args foundation
 	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", "./" + mapInfo + ".osu"}
 
-	// Change osu! version
+	// Reject other osu! versions
 	if osuType == "joz" || osuType == "live" {
 		s.ChannelMessageSend(m.ChannelID, "No support for joz or live versions regarding acc graphs yet!")
 		return

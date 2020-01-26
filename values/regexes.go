@@ -8,18 +8,18 @@ var (
 
 	// Addregex checks if a command was made to add a score to their list
 	Addregex = regexp.MustCompile(`!add`)
-	// Moveregex checks if a command was made to move a score from one sublist to another
-	Moveregex = regexp.MustCompile(`!move`)
 	// Accgraphregex checks if a command was made to create an acc graph for the map
 	Accgraphregex = regexp.MustCompile(`!acc`)
 	// Runregex checks if a command was made to run their list
 	Runregex = regexp.MustCompile(`!run`)
 	// Listregex checks if a command was made to show their list
 	Listregex = regexp.MustCompile(`!list`)
+	// Importregex checks if a command was made to import a list
+	Importregex = regexp.MustCompile(`!import`)
 	// Whoregex checks if a command was made to show who has a list
 	Whoregex = regexp.MustCompile(`!wholist`)
 	// Delregex checks if a command was made to delete a score from their list
-	Delregex = regexp.MustCompile(`!(d(el(ete)?)?|r(emove)?)(\s+(\d+)?)`)
+	Delregex = regexp.MustCompile(`!(d(el(ete)?)?|r(emove)?)\s+(\d+|-all)`)
 
 	// Mapregex checks if a map was linked
 	Mapregex = regexp.MustCompile(`(osu|old)\.ppy\.sh\/(s|b|beatmaps|beatmapsets)\/(\d+)(#osu\/(\d+))?`)
@@ -46,7 +46,7 @@ var (
 	Aimregex = regexp.MustCompile(`Aim\s+:\s+((\d+)\.?\d+)`)
 	// Tapregex gets the tap pp from a pp calc result
 	Tapregex = regexp.MustCompile(`Tap\s+:\s+((\d+)\.?\d+)`)
-	// accPPregex gets the acc pp from a pp calc result
+	// AccPPregex gets the acc pp from a pp calc result
 	AccPPregex = regexp.MustCompile(`Accuracy\s+:\s+((\d+)\.?\d+)`)
 
 	// Spamfileregex checks for the spam files created by the custom osu-tools
@@ -72,6 +72,8 @@ var (
 	Accrangeregex = regexp.MustCompile(`-a\s+(\d+)\s+(\d+)`)
 	// Timeregex looks for a specific time range for the graphs
 	Timeregex = regexp.MustCompile(`-r\s+(\d+)\s+(\d+)`)
+	// Optionregex looks for a specific list to run
+	Optionregex = regexp.MustCompile(`-o\s+(.+)`)
 
 	// Jozregex will run joz instead of delta
 	Jozregex = regexp.MustCompile(`-j`)
