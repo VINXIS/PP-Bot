@@ -6,6 +6,8 @@ var (
 	// OutsideServerregex checks if a regex was from outside the PP server
 	OutsideServerregex = regexp.MustCompile(`-g`)
 
+	// Helpregex checks if a command was made to see help
+	Helpregex = regexp.MustCompile(`!help`)
 	// Addregex checks if a command was made to add a score to their list
 	Addregex = regexp.MustCompile(`!add\s+(.+)`)
 	// Accgraphregex checks if a command was made to create an acc graph for the map
@@ -21,7 +23,7 @@ var (
 	// Moveregex checks if a command was made to move a score between lists
 	Moveregex = regexp.MustCompile(`!move\s+(.+)`)
 	// Delregex checks if a command was made to delete a score from their list
-	Delregex = regexp.MustCompile(`!(d(el(ete)?)?|r(emove)?)\s+(\d+|-all)`)
+	Delregex = regexp.MustCompile(`!delete\s+(\d+|-all)`)
 
 	// Mapregex checks if a map was linked
 	Mapregex = regexp.MustCompile(`(osu|old)\.ppy\.sh\/(s|b|beatmaps|beatmapsets)\/(\d+)(#osu\/(\d+))?`)

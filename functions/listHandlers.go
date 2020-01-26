@@ -356,7 +356,7 @@ func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	val := values.Delregex.FindStringSubmatch(m.Content)[5]
+	val := values.Delregex.FindStringSubmatch(m.Content)[1]
 	if val == "-all" { // Delete a sublist or the whole list
 		if values.Optionregex.MatchString(m.Content) { // If they want to only delete a sublist
 			subListName := values.Optionregex.FindStringSubmatch(m.Content)[1]
@@ -698,6 +698,7 @@ func ListImportHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, "Error in parsing JSON contents!")
 			return
 		}
+		newList.User = *m.Author
 
 		ioutil.WriteFile("./lists/"+m.Author.ID+".json", b, 0644)
 		s.ChannelMessageSend(m.ChannelID, "Saved under `"+m.Author.ID+".json`!")

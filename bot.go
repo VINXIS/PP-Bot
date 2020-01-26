@@ -84,6 +84,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 		// Check type of command, delete otherwise
 		switch {
+		case values.Helpregex.MatchString(m.Content):
+			go functions.HelpHandler(s, m)
 		case values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content): // Add score to list
 			go functions.ListAddHandler(s, m)
 		case values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename)): // Get accuracy graph for a map
