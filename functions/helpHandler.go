@@ -127,8 +127,8 @@ func helpUser(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 	embed.Description = "Sending a user link will calculate the user's top 100 plays. If you wish to calculate your plays outside of the top 100, consider using a list."
 	embed.Fields = []*discordgo.MessageEmbedField{
 		&discordgo.MessageEmbedField{
-			Name:   "(-j|-l)",
-			Value:  "Will calculate using either the joz system if `-j`, or live if `-l`. If both are provided, it will default to joz.",
+			Name:  "(-j|-l)",
+			Value: "Will calculate using either the joz system if `-j`, or live if `-l`. If both are provided, it will default to joz.",
 		},
 	}
 	return embed
@@ -228,6 +228,11 @@ func helpRun(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 	embed.Description = "`run` will run a sublist or all lists combined."
 	embed.Fields = []*discordgo.MessageEmbedField{
 		&discordgo.MessageEmbedField{
+			Name:   "@user",
+			Value:  "The user's list to show. If nooone is mentioned, it will show their own list instead.",
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
 			Name:   "(-j|-l)",
 			Value:  "Will calculate using either the joz system if `-j`, or live if `-l`. If both are provided, it will default to joz.",
 			Inline: true,
@@ -247,8 +252,8 @@ func helpList(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 	embed.Description = "`list` will show all sublists."
 	embed.Fields = []*discordgo.MessageEmbedField{
 		&discordgo.MessageEmbedField{
-			Name:   "@user",
-			Value:  "The user's list to show. If nooone is mentioned, it will show their own list instead.",
+			Name:  "@user",
+			Value: "The user's list to show. If nooone is mentioned, it will show their own list instead.",
 		},
 	}
 	return embed
@@ -260,30 +265,30 @@ func helpImport(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 	embed.Description = "`import` will import a list given a JSON file. The JSON file should be in one of the following formats below.\n**Import will not work if you already have a list.**"
 	embed.Fields = []*discordgo.MessageEmbedField{
 		&discordgo.MessageEmbedField{
-			Name:   "JSON file format 1",
-			Value:  "```JSON\n" + 
-				"[\n" + 
-				"\t{\n" + 
-				"\t\t\"mapinfo\": \"artist - title [diff name]\",\n" + 
-				"\t\t\"beatmapid\": beatmapID\n" + 
-				"\t\t\"accuracy\": accuracy\n" + 
-				"\t\t\"combo\": combo\n" + 
-				"\t\t\"misses\": misses\n" + 
-				"\t\t\"mods\": \"mods\"\n" + 
+			Name: "JSON file format 1",
+			Value: "```JSON\n" +
+				"[\n" +
+				"\t{\n" +
+				"\t\t\"mapinfo\": \"artist - title [diff name]\",\n" +
+				"\t\t\"beatmapid\": beatmapID\n" +
+				"\t\t\"accuracy\": accuracy\n" +
+				"\t\t\"combo\": combo\n" +
+				"\t\t\"misses\": misses\n" +
+				"\t\t\"mods\": \"mods\"\n" +
 				"\t},\n" +
 				"\t{...}, ...\n" +
 				"]```",
 		},
 		&discordgo.MessageEmbedField{
-			Name:   "JSON file format 2",
-			Value:  "```JSON\n" + 
-				"{\n" + 
-				"\t\"User\": {},\n" + 
-				"\t\"Lists\": [\n" + 
-				"\t\t{\n" + 
-				"\t\t\t\"Name\": \"Name\",\n" + 
+			Name: "JSON file format 2",
+			Value: "```JSON\n" +
+				"{\n" +
+				"\t\"User\": {},\n" +
+				"\t\"Lists\": [\n" +
+				"\t\t{\n" +
+				"\t\t\t\"Name\": \"Name\",\n" +
 				"\t\t\t\"Scores\": [\n" +
-				"\t\t\t\t{\n" + 
+				"\t\t\t\t{\n" +
 				"\t\t\t\t\t\"MapInfo\": \"artist - title [diff name]\",\n" +
 				"\t\t\t\t\t\"BeatmapID\": beatmapID,\n" +
 				"\t\t\t\t\t\"Accuracy\": accuracy,\n" +
@@ -293,12 +298,12 @@ func helpImport(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 				"\t\t\t\t\t\"Misses\": misses,\n" +
 				"\t\t\t\t\t\"Mods\": \"mods\",\n" +
 				"\t\t\t\t\t\"UseAccuracy\": true / false\n" +
-				"\t\t\t\t},\n" + 
-				"\t\t\t\t{...}, ...\n" + 
-				"\t\t\t]\n" + 
+				"\t\t\t\t},\n" +
+				"\t\t\t\t{...}, ...\n" +
+				"\t\t\t]\n" +
 				"\t\t},\n" +
 				"\t\t{...}, ...\n" +
-				"\t]\n" + 
+				"\t]\n" +
 				"}```",
 		},
 	}

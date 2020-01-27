@@ -38,10 +38,10 @@ func ListHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		return
 	}
-	log.Println(m.Author.String() + " has requested for their list.")
+	log.Println(m.Author.String() + " has requested for " + user.Username + "'s list.")
 
 	// Create tables
-	mainText := m.Author.Username + "'s list:\n\n"
+	mainText := user.Username + "'s list:\n\n"
 
 	for _, subList := range list.Lists {
 		// Create sublist table
@@ -92,7 +92,7 @@ func ListHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		mainText += "List: " + subList.Name + "\n" + builder.String() + "\n\n"
 	}
 
-	go sendPaste(s, m, structs.NewPasteData(m.Author.Username+"'s List", mainText), "When deleting, make sure to keep check of their NUM to make sure you do not accidentally delete the wrong score!")
+	go sendPaste(s, m, structs.NewPasteData(user.Username+"'s List", mainText), "When deleting, make sure to keep check of their NUM to make sure you do not accidentally delete the wrong score!")
 }
 
 // ListAddHandler lets the user add a map to their list
@@ -519,7 +519,7 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
-	log.Println(m.Author.String() + " has requested to run their list.")
+	log.Println(m.Author.String() + " has requested to run " + user.Username + "'s list.")
 
 	// Remove dupes
 	keys := make(map[structs.Score]bool)
@@ -633,7 +633,7 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	table.Render()
 	mainText += builder.String()
 
-	go sendPaste(s, m, structs.NewPasteData(m.Author.Username+"'s Scores", mainText), "")
+	go sendPaste(s, m, structs.NewPasteData(user.Username+"'s Scores", mainText), "")
 }
 
 // ListWhoHandler lets the bot owner see whose list is who
