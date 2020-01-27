@@ -42,18 +42,27 @@ func main() {
 
 	// Build osu-tools
 	log.Println("Building osu-tools...")
-	_, err = exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release").Output()
+	delta := exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release")
+	joz := exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release")
+	live := exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release")
+	_, err = delta.Output()
 	if err != nil {
+		delta.Process.Kill()
 		fatal(err)
 	}
-	_, err = exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release").Output()
+	delta.Process.Kill()
+	_, err = joz.Output()
 	if err != nil {
+		joz.Process.Kill()
 		fatal(err)
 	}
-	_, err = exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release").Output()
+	joz.Process.Kill()
+	_, err = live.Output()
 	if err != nil {
+		joz.Process.Kill()
 		fatal(err)
 	}
+	live.Process.Kill()
 	log.Println("Built osu-tools!")
 
 	// Get values

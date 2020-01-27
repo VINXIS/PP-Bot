@@ -88,11 +88,14 @@ func AccGraphHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var accValues string
 	for i := accrange[0]; i <= accrange[1]; i += increment {
 		tempArgs := append(args, "-a", strconv.FormatFloat(i, 'f', 2, 64))
-		res, err := exec.Command("dotnet", tempArgs...).Output()
+		process := exec.Command("dotnet", tempArgs...)
+		res, err := process.Output()
 		if err != nil {
+			process.Process.Kill()
 			s.ChannelMessageSend(m.ChannelID, "Error in obtaining pp values for the accuracy: "+strconv.FormatFloat(i, 'f', 2, 64)+".")
 			return
 		}
+		process.Process.Kill()
 		txt := strings.Replace(string(res), "Accuracy", "", 1)
 		aim, _ := strconv.ParseFloat(values.Aimregex.FindStringSubmatch(txt)[1], 64)
 		tap, _ := strconv.ParseFloat(values.Tapregex.FindStringSubmatch(txt)[1], 64)

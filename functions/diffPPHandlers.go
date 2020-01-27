@@ -49,11 +49,14 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		args[2] = "./cache/" + strings.Split(mapInfo, " ")[0] + ".osu"
 	}
 
-	res, err := exec.Command("dotnet", args...).Output()
+	process := exec.Command("dotnet", args...)
+	res, err := process.Output()
 	if err != nil || string(res) == values.InvalidCommand {
+		process.Process.Kill()
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
+	process.Process.Kill()
 
 	// Finish live diff calc here
 	if osuType == "live" {
@@ -221,11 +224,14 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Run command
-	res, err := exec.Command("dotnet", args...).Output()
+	process := exec.Command("dotnet", args...)
+	res, err := process.Output()
 	if err != nil || string(res) == values.InvalidCommand {
+		process.Process.Kill()
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
+	process.Process.Kill()
 
 	// Send pp value and remove files
 	s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+"\n```\n"+string(res)+"```")

@@ -216,11 +216,14 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Run command
-	res, err := exec.Command("dotnet", args...).Output()
+	process := exec.Command("dotnet", args...)
+	res, err := process.Output()
 	if err != nil {
+		process.Process.Kill()
 		s.ChannelMessageSend(m.ChannelID, "An error occured in processing the score. Please make sure your args are correct.")
 		return
 	}
+	process.Process.Kill()
 
 	// Save updated list
 	b, err := json.Marshal(list)
@@ -556,11 +559,14 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			tempArgs = append(tempArgs, "-m", string(score.Mods[i])+string(score.Mods[i+1]))
 		}
 
-		res, err := exec.Command("dotnet", tempArgs...).Output()
+		process := exec.Command("dotnet", tempArgs...)
+		res, err := process.Output()
 		if err != nil {
+			process.Process.Kill()
 			s.ChannelMessageSend(m.ChannelID, "Error in obtaining the pp calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
 			continue
 		}
+		process.Process.Kill()
 
 		ppVal, err := strconv.ParseFloat(values.PPparseregex.FindStringSubmatch(string(res))[1], 64)
 		if err != nil {

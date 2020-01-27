@@ -75,11 +75,14 @@ func UserHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Run command
-	res, err := exec.Command("dotnet", args...).Output()
+	process := exec.Command("dotnet", args...)
+	res, err := process.Output()
 	if err != nil || res[0] == 83 {
+		process.Process.Kill()
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
+	process.Process.Kill()
 
 	go sendPaste(s, m, structs.NewPasteData(user.Username, string(res)), "User calc for **"+user.Username+"** done in "+time.Now().Sub(timeTaken).String())
 
