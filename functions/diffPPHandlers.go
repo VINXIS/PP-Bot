@@ -2,7 +2,6 @@ package functions
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os/exec"
