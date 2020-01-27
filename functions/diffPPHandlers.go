@@ -2,6 +2,7 @@ package functions
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os/exec"
@@ -50,7 +51,7 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	res, err := exec.Command("dotnet", args...).Output()
-	if err != nil || res[0] == 83 {
+	if err != nil || string(res) == values.InvalidCommand {
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
@@ -222,7 +223,7 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Run command
 	res, err := exec.Command("dotnet", args...).Output()
-	if err != nil || res[0] == 83 {
+	if err != nil || string(res) == values.InvalidCommand {
 		s.ChannelMessageSend(m.ChannelID, "Could not run command!")
 		return
 	}
