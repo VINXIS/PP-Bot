@@ -21,7 +21,6 @@ func main() {
 	// Get args
 	build := false
 	channelLog := false
-	log.Println("Args", os.Args)
 	for _, arg := range os.Args {
 		if arg == "-b" || arg == "--build" {
 			build = true
