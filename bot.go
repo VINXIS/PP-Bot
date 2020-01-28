@@ -180,7 +180,7 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		inServer := m.GuildID == values.Conf.ServerID
 
 		// Delete messages that are not commands
-		if inServer && !help && !add && !acc && !beatmap && user && run && list && move && delete && who && listImport {
+		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
 			log.Println(m.Author.Username + " tried to speak in the PP server and said: " + m.Content)
 		}
