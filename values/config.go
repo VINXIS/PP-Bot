@@ -12,6 +12,7 @@ var Conf Config
 // Config is the struct for configuration
 type Config struct {
 	DiscordAPIKey string
+	LogChannel    string
 	OsuAPIKey     string
 	PasteAPIKey   string
 	UserID        string

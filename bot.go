@@ -74,6 +74,9 @@ func main() {
 	// Create discord instance, and add the message handler
 	discord, err := discordgo.New("Bot " + values.Conf.DiscordAPIKey)
 	fatal(err)
+	if values.Conf.LogChannel != "" {
+		discord.AddHandler(roleHandler)
+	}
 	discord.AddHandler(messageHandler)
 	err = discord.Open()
 	fatal(err)
@@ -128,6 +131,33 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
 			log.Println(m.Author.Username + " tried to speak in the PP server and said: " + m.Content)
 		}
+	}
+}
+
+func roleHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
+	// Make sure if it's in the proper server
+	if values.Conf.ServerID != m.GuildID {
+		return
+	}
+
+	auditLog, err := s.GuildAuditLog(values.Conf.ServerID, values.Conf.UserID, "", 25, -1)
+	if err != nil {
+		s.ChannelMessageSend(values.Conf.LogChannel, "A role was changed, but there was an error in obtaining the audit log!")
+		return
+	}
+
+	roleLog := auditLog.AuditLogEntries[0]
+	roleAffectedUser, err := s.User(roleLog.TargetID)
+	if err != nil {
+		s.ChannelMessageSend(values.Conf.LogChannel, "A role was changed, but there was an error in obtaining the user!")
+		return
+	}
+	roleAction := roleLog.Changes[0].Key
+	roleName := roleLog.Changes[0].NewValue.([]interface{})[0].(map[string]interface{})["name"].(string)
+	if roleAction == "$add" {
+		s.ChannelMessageSend(values.Conf.LogChannel, "The user **"+roleAffectedUser.String()+"** has been given the **"+roleName+"** role!")
+	} else {
+		s.ChannelMessageSend(values.Conf.LogChannel, "The user **"+roleAffectedUser.String()+"** has lost the **"+roleName+"** role!")
 	}
 }
 

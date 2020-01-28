@@ -1,5 +1,6 @@
 {
     "DiscordAPIKey": "",
+    "LogChannel": "NOT REQUIRED",
     "OsuAPIKey": "",
     "PasteAPIKey": "",
     "UserID": "",
