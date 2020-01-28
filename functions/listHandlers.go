@@ -673,11 +673,6 @@ func ListWhoHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // ListImportHandler lets you import a list
 func ListImportHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if !strings.HasSuffix(m.Attachments[0].Filename, ".json") {
-		s.ChannelMessageSend(m.ChannelID, "Invalid file type!")
-		return
-	}
-
 	// Get new list
 	list, new := structs.GetList(m.Author)
 	if !new {

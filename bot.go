@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 
 	"./functions"
@@ -16,6 +18,18 @@ import (
 )
 
 func main() {
+	// Get args
+	build := false
+	channelLog := false
+	log.Println("Args", os.Args)
+	for _, arg := range os.Args {
+		if arg == "-b" || arg == "--build" {
+			build = true
+		} else if arg == "-l" || arg == "--log" {
+			channelLog = true
+		}
+	}
+
 	// Create cache folder
 	_, err := os.Stat("./cache")
 	if os.IsNotExist(err) {
@@ -40,30 +54,32 @@ func main() {
 		fatal(err)
 	}
 
-	// Build osu-tools
-	log.Println("Building osu-tools...")
-	delta := exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release")
-	joz := exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release")
-	live := exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release")
-	_, err = delta.Output()
-	if err != nil {
+	if build {
+		// Build osu-tools
+		log.Println("Building osu-tools...")
+		delta := exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release")
+		joz := exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release")
+		live := exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release")
+		_, err = delta.Output()
+		if err != nil {
+			delta.Process.Kill()
+			fatal(err)
+		}
 		delta.Process.Kill()
-		fatal(err)
-	}
-	delta.Process.Kill()
-	_, err = joz.Output()
-	if err != nil {
+		_, err = joz.Output()
+		if err != nil {
+			joz.Process.Kill()
+			fatal(err)
+		}
 		joz.Process.Kill()
-		fatal(err)
+		_, err = live.Output()
+		if err != nil {
+			joz.Process.Kill()
+			fatal(err)
+		}
+		live.Process.Kill()
+		log.Println("Built osu-tools!")
 	}
-	joz.Process.Kill()
-	_, err = live.Output()
-	if err != nil {
-		joz.Process.Kill()
-		fatal(err)
-	}
-	live.Process.Kill()
-	log.Println("Built osu-tools!")
 
 	// Get values
 	values.GetConfig()
@@ -74,27 +90,41 @@ func main() {
 	// Create discord instance, and add the message handler
 	discord, err := discordgo.New("Bot " + values.Conf.DiscordAPIKey)
 	fatal(err)
-	if values.Conf.LogChannel != "" {
+	if values.Conf.LogChannel != "" && channelLog {
+		discord.AddHandler(logMessageHandler)
 		discord.AddHandler(roleHandler)
+		discord.AddHandler(joinHandler)
+		discord.AddHandler(leaveHandler)
+		log.Println("Added logging!")
+	} else if values.Conf.LogChannel == "" && channelLog {
+		fatal(errors.New("Please provide a logging channel ID to log role and user join / leave"))
+	} else {
+		discord.AddHandler(normalMessageHandler)
 	}
-	discord.AddHandler(messageHandler)
 	err = discord.Open()
 	fatal(err)
 	log.Println("Logged in as " + discord.State.User.String())
+	if !channelLog {
+		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now up.")
+	}
 
 	// Create a channel to keep the bot running until a prompt is given to close
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Kill)
 	<-sc
 
+	if !channelLog {
+		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now going down.")
+	}
+
 	// Close the Discord Session
 	discord.Close()
 }
 
-func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Check if the message is to even be bothered to read
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
-		// Check type of command, delete otherwise
+		// Check if it's a command
 		switch {
 		case values.Helpregex.MatchString(m.Content):
 			go functions.HelpHandler(s, m)
@@ -125,9 +155,30 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 			go functions.ListWhoHandler(s, m)
-		case values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0: // Import a map list
+		case values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0 && strings.HasSuffix(m.Attachments[0].Filename, ".json"): // Import a map list
 			go functions.ListImportHandler(s, m)
-		case m.GuildID == values.Conf.ServerID: // Delete non-map links
+		}
+	}
+}
+
+func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if the message is to even be bothered to read
+	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
+		help := values.Helpregex.MatchString(m.Content)
+		add := values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content)
+		acc := values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
+		beatmap := values.Mapregex.MatchString(m.Content) || (len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
+		user := values.Userregex.MatchString(m.Content)
+		run := values.Runregex.MatchString(m.Content)
+		list := values.Listregex.MatchString(m.Content)
+		move := values.Moveregex.MatchString(m.Content)
+		delete := values.Delregex.MatchString(m.Content)
+		who := values.Whoregex.MatchString(m.Content)
+		listImport := values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0 && strings.HasSuffix(m.Attachments[0].Filename, ".json")
+		inServer := m.GuildID == values.Conf.ServerID
+
+		// Delete messages that are not commands
+		if inServer && !help && !add && !acc && !beatmap && user && run && list && move && delete && who && listImport {
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
 			log.Println(m.Author.Username + " tried to speak in the PP server and said: " + m.Content)
 		}
@@ -159,6 +210,24 @@ func roleHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 	} else {
 		s.ChannelMessageSend(values.Conf.LogChannel, "The user **"+roleAffectedUser.String()+"** has lost the **"+roleName+"** role!")
 	}
+}
+
+func joinHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+	// Make sure if it's in the proper server
+	if values.Conf.ServerID != m.GuildID {
+		return
+	}
+
+	s.ChannelMessageSend(values.Conf.LogChannel, "**"+m.User.String()+"** has joined!")
+}
+
+func leaveHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
+	// Make sure if it's in the proper server
+	if values.Conf.ServerID != m.GuildID {
+		return
+	}
+
+	s.ChannelMessageSend(values.Conf.LogChannel, "**"+m.User.String()+"** has left!")
 }
 
 func fatal(err error) {
