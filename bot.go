@@ -48,10 +48,12 @@ func main() {
 		}
 	}
 
-	// Change console type
-	_, err = exec.Command("chcp", "65001").Output()
-	if err != nil {
-		fatal(err)
+	if !channelLog {
+		// Change console type for proper output
+		_, err = exec.Command("chcp", "65001").Output()
+		if err != nil {
+			fatal(err)
+		}
 	}
 
 	if build {
