@@ -182,7 +182,19 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Delete messages that are not commands
 		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
-			log.Println(m.Author.Username + " tried to speak in the PP server and said: " + m.Content)
+			if values.Conf.MessageChannel != "" {
+				ch, err := s.Channel(m.ChannelID)
+				if err == nil {
+					s.ChannelMessageSend(values.Conf.MessageChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+				}
+			} else {
+				ch, err := s.Channel(m.ChannelID)
+				if err == nil {
+					log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+				} else {
+					log.Println("**" + m.Author.String() + "** tried to speak and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+				}
+			}
 		}
 	}
 }
