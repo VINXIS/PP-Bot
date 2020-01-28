@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"time"
 
 	"./functions"
 	"./values"
@@ -104,7 +105,7 @@ func main() {
 	fatal(err)
 	log.Println("Logged in as " + discord.State.User.String())
 	if !channelLog {
-		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now up.")
+		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now up. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 	}
 
 	// Create a channel to keep the bot running until a prompt is given to close
@@ -113,7 +114,7 @@ func main() {
 	<-sc
 
 	if !channelLog {
-		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now going down.")
+		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now going down. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 	}
 
 	// Close the Discord Session
