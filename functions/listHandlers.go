@@ -140,7 +140,7 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		BeatmapID: beatmapID,
 	}
 	if values.Modregex.MatchString(m.Content) {
-		score.Mods = values.Modregex.FindStringSubmatch(m.Content)[1]
+		score.Mods = strings.ToUpper(values.Modregex.FindStringSubmatch(m.Content)[1])
 		for i := 0; i < len(score.Mods); i += 2 {
 			args = append(args, "-m", strings.ToUpper(string(score.Mods[i])+string(score.Mods[i+1])))
 		}
