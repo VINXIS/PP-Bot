@@ -142,7 +142,7 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if values.Modregex.MatchString(m.Content) {
 		score.Mods = values.Modregex.FindStringSubmatch(m.Content)[1]
 		for i := 0; i < len(score.Mods); i += 2 {
-			args = append(args, "-m", string(score.Mods[i])+string(score.Mods[i+1]))
+			args = append(args, "-m", strings.ToUpper(string(score.Mods[i])+string(score.Mods[i+1])))
 		}
 	}
 
@@ -187,7 +187,7 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if score.Goods == 0 && score.Mehs == 0 {
+	if score.Goods == 0 && score.Mehs == 0 && !score.UseAccuracy {
 		score.Accuracy = 100
 		score.UseAccuracy = true
 	}
