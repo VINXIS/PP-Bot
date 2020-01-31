@@ -6,9 +6,12 @@ import os
 args = sys.argv
 skill = args[1]
 beatmapid = args[2]
+start = round(float(args[3]))
+end = round(float(args[4]))
 difference = float(args[5])
 mapinfo = args[6]
-version = args[7]
+mods = args[7]
+version = args[8]
 ticks = 0.1
 if difference > 120:
     ticks = 20
@@ -42,10 +45,10 @@ if version == "joz":
     plt.xlabel('seconds')
     plt.ylabel('strain')
 elif version == "delta":
-    if os.path.exists("cache/graph_" + beatmapid + ".txt"):
-        a = np.transpose(np.loadtxt("cache/graph_" + beatmapid + ".txt"))
-    elif os.path.exists("cache/graph_.txt"):
-        a = np.transpose(np.loadtxt("cache/graph_.txt"))
+    if os.path.exists("cache/graph_" + beatmapid + "_" + mods + ".txt"):
+        a = np.transpose(np.loadtxt("cache/graph_" + beatmapid + "_" + mods + ".txt"))
+    elif os.path.exists("cache/graph__" + mods + ".txt"):
+        a = np.transpose(np.loadtxt("cache/graph__" + mods + ".txt"))
 
     times, IPs_raw, IPs, miss_probs = a[0], a[1], a[2], a[3]
 
@@ -61,8 +64,8 @@ elif version == "delta":
     axarr[1].set_ylabel("Miss Probability")
     plt.title(mapinfo)
 
-plt.xlim(round(float(args[3])), round(float(args[4])))
-plt.xticks(np.arange(round(float(args[3])), round(float(args[4])), ticks))
+plt.xlim(start, end)
+plt.xticks(np.arange(start, end, ticks))
 plt.minorticks_on()
 plt.grid(b=True, which='both')
 plt.savefig(beatmapid + '.png', bbox_inches='tight')

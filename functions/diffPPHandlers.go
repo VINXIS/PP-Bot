@@ -31,8 +31,9 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "difficulty", "./" + mapInfo + ".osu"}
 
 	// Get score specs (acc, combo, e.t.c)
+	var mods string
 	if values.Modregex.MatchString(m.Content) {
-		mods := values.Modregex.FindStringSubmatch(m.Content)[1]
+		mods = values.Modregex.FindStringSubmatch(m.Content)[1]
 		for i := 0; i < len(mods); i += 2 {
 			args = append(args, "-m", string(mods[i])+string(mods[i+1]))
 		}
@@ -80,12 +81,11 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Get graph content
 	var graphContent []byte
-
 	switch osuType {
 	case "delta":
-		graphContent, err = ioutil.ReadFile("./cache/graph_" + mapID + ".txt")
+		graphContent, err = ioutil.ReadFile("./cache/graph_" + mapID + "_" + mods + ".txt")
 		if err != nil {
-			graphContent, err = ioutil.ReadFile("./cache/graph_.txt")
+			graphContent, err = ioutil.ReadFile("./cache/graph__" + mods + ".txt")
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, "Could not find graph data!")
 				return
@@ -142,15 +142,16 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	difference = end - start
 
-	args = []string{"plot.py", skill, mapID, strconv.Itoa(start), strconv.Itoa(end), strconv.Itoa(difference), "\"" + mapInfo + "\"", "delta"}
+	args = []string{"plot.py", skill, mapID, strconv.Itoa(start), strconv.Itoa(end), strconv.Itoa(difference), mapInfo, mods, "delta"}
 	if osuType == "joz" {
 		args[len(args)-1] = "joz"
 	}
 
 	// Generate graph using python script
 	_, err = exec.Command("python", args...).Output()
+	log.Println(exec.Command("python", args...).String())
 	if err != nil {
-		s.ChannelMessageSend(m.ChannelID, "Error generating graph for the map!")
+		s.ChannelMessageSend(m.ChannelID, "An error in generating a graph for the map occurred!")
 		return
 	}
 
