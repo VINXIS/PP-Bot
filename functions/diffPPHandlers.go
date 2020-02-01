@@ -149,7 +149,6 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Generate graph using python script
 	_, err = exec.Command("python", args...).Output()
-	log.Println(exec.Command("python", args...).String())
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "An error in generating a graph for the map occurred!")
 		return
