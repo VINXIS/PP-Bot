@@ -92,13 +92,13 @@ func main() {
 	// Create discord instance, and add the message handler
 	discord, err := discordgo.New("Bot " + values.Conf.DiscordAPIKey)
 	fatal(err)
-	if values.Conf.LogChannel != "" && channelLog {
+	if len(values.Conf.CalcChannels) >= 0 && channelLog {
 		discord.AddHandler(logMessageHandler)
 		discord.AddHandler(roleHandler)
 		discord.AddHandler(joinHandler)
 		discord.AddHandler(leaveHandler)
 		log.Println("Added logging!")
-	} else if values.Conf.LogChannel == "" && channelLog {
+	} else if len(values.Conf.CalcChannels) == 0 && channelLog {
 		fatal(errors.New("Please provide a logging channel ID to log role and user join / leave"))
 	} else {
 		discord.AddHandler(normalMessageHandler)
@@ -107,7 +107,9 @@ func main() {
 	fatal(err)
 	log.Println("Logged in as " + discord.State.User.String())
 	if !channelLog {
-		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now up. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+		for _, ch := range values.Conf.CalcChannels {
+			discord.ChannelMessageSend(ch, "osu! calculations are now up. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+		}
 	}
 
 	// Create a channel to keep the bot running until a prompt is given to close
@@ -116,7 +118,9 @@ func main() {
 	<-sc
 
 	if !channelLog {
-		discord.ChannelMessageSend(values.Conf.LogChannel, "osu! calculations are now going down. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+		for _, ch := range values.Conf.CalcChannels {
+			discord.ChannelMessageSend(ch, "osu! calculations are now going down. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+		}
 	}
 
 	// Close the Discord Session

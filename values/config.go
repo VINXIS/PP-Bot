@@ -13,6 +13,7 @@ var Conf Config
 type Config struct {
 	DiscordAPIKey  string
 	LogChannel     string
+	CalcChannels   []string
 	MessageChannel string
 	OsuAPIKey      string
 	PasteAPIKey    string
