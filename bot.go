@@ -169,6 +169,11 @@ func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if m.Author == nil {
+		go s.ChannelMessageDelete(m.ChannelID, m.ID)
+		return
+	}
+
 	// Check if the message is to even be bothered to read
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 		help := values.Helpregex.MatchString(m.Content)
@@ -186,18 +191,18 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		// Delete messages that are not commands
 		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
-			s.ChannelMessageDelete(m.ChannelID, m.ID)
+			go s.ChannelMessageDelete(m.ChannelID, m.ID)
 			if values.Conf.MessageLogChannel != "" {
 				ch, err := s.Channel(m.ChannelID)
 				if err == nil {
-					s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+					go s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 				}
 			} else {
 				ch, err := s.Channel(m.ChannelID)
 				if err == nil {
-					log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					go log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
 				} else {
-					log.Println("**" + m.Author.String() + "** tried to speak and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					go log.Println("**" + m.Author.String() + "** tried to speak and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
 				}
 			}
 		}
@@ -206,6 +211,11 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // for edits, idk how to kill this message duplication
 func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
+	if m.Author == nil {
+		go s.ChannelMessageDelete(m.ChannelID, m.ID)
+		return
+	}
+
 	// Check if the message is to even be bothered to read
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 		help := values.Helpregex.MatchString(m.Content)
@@ -223,18 +233,18 @@ func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
 
 		// Delete messages that are not commands
 		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
-			s.ChannelMessageDelete(m.ChannelID, m.ID)
+			go s.ChannelMessageDelete(m.ChannelID, m.ID)
 			if values.Conf.MessageLogChannel != "" {
 				ch, err := s.Channel(m.ChannelID)
 				if err == nil {
-					s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+					go s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 				}
 			} else {
 				ch, err := s.Channel(m.ChannelID)
 				if err == nil {
-					log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					go log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
 				} else {
-					log.Println("**" + m.Author.String() + "** tried to speak and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					go log.Println("**" + m.Author.String() + "** tried to speak and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
 				}
 			}
 		}
