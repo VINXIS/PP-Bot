@@ -109,7 +109,7 @@ func main() {
 	log.Println("Logged in as " + discord.State.User.String())
 	if !channelLog {
 		for _, ch := range values.Conf.CalcChannels {
-			discord.ChannelMessageSend(ch, "osu! calculations are now up. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+			go discord.ChannelMessageSend(ch, "osu! calculations are now up. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 		}
 	}
 
@@ -120,7 +120,7 @@ func main() {
 
 	if !channelLog {
 		for _, ch := range values.Conf.CalcChannels {
-			discord.ChannelMessageSend(ch, "osu! calculations are now going down. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+			go discord.ChannelMessageSend(ch, "osu! calculations are now going down. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 		}
 	}
 
