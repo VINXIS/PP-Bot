@@ -30,6 +30,9 @@ func main() {
 		}
 	}
 
+	// Get values
+	values.GetConfig()
+
 	if !channelLog {
 		// Create cache folder
 		_, err := os.Stat("./cache")
@@ -84,9 +87,6 @@ func main() {
 		live.Process.Kill()
 		log.Println("Built osu-tools!")
 	}
-
-	// Get values
-	values.GetConfig()
 
 	// Create osu API client
 	values.OsuAPI = osuapi.NewClient(values.Conf.OsuAPIKey)
