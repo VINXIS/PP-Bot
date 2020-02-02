@@ -30,30 +30,32 @@ func main() {
 		}
 	}
 
-	// Create cache folder
-	_, err := os.Stat("./cache")
-	if os.IsNotExist(err) {
-		err = os.MkdirAll("./cache", 0755)
-		if err != nil {
-			fatal(err)
-		}
-	}
-
-	// Create lists folder
-	_, err = os.Stat("./lists")
-	if os.IsNotExist(err) {
-		err = os.MkdirAll("./lists", 0755)
-		if err != nil {
-			fatal(err)
-		}
-	}
-
 	if !channelLog {
+		// Create cache folder
+		_, err := os.Stat("./cache")
+		if os.IsNotExist(err) {
+			err = os.MkdirAll("./cache", 0755)
+			if err != nil {
+				fatal(err)
+			}
+		}
+
+		// Create lists folder
+		_, err = os.Stat("./lists")
+		if os.IsNotExist(err) {
+			err = os.MkdirAll("./lists", 0755)
+			if err != nil {
+				fatal(err)
+			}
+		}
+
 		// Change console type for proper output
 		_, err = exec.Command("chcp", "65001").Output()
 		if err != nil {
 			fatal(err)
 		}
+	} else if values.Conf.LogChannel == "" || len(values.Conf.CalcChannels) == 0 || values.Conf.MessageChannel == "" {
+		fatal(errors.New("Please add log channel IDs"))
 	}
 
 	if build {
@@ -62,7 +64,7 @@ func main() {
 		delta := exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release")
 		joz := exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release")
 		live := exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release")
-		_, err = delta.Output()
+		_, err := delta.Output()
 		if err != nil {
 			delta.Process.Kill()
 			fatal(err)
@@ -92,15 +94,13 @@ func main() {
 	// Create discord instance, and add the message handler
 	discord, err := discordgo.New("Bot " + values.Conf.DiscordAPIKey)
 	fatal(err)
-	if len(values.Conf.CalcChannels) >= 0 && channelLog {
+	if channelLog {
 		discord.AddHandler(logMessageHandler)
 		discord.AddHandler(logMessageEditHandler)
 		discord.AddHandler(roleHandler)
 		discord.AddHandler(joinHandler)
 		discord.AddHandler(leaveHandler)
 		log.Println("Added logging!")
-	} else if len(values.Conf.CalcChannels) == 0 && channelLog {
-		fatal(errors.New("Please provide a logging channel ID to log role and user join / leave"))
 	} else {
 		discord.AddHandler(normalMessageHandler)
 	}
