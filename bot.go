@@ -54,7 +54,7 @@ func main() {
 		if err != nil {
 			fatal(err)
 		}
-	} else if values.Conf.LogChannel == "" || len(values.Conf.CalcChannels) == 0 || values.Conf.MessageChannel == "" {
+	} else if values.Conf.RoleLogChannel == "" || values.Conf.MessageLogChannel == "" || values.Conf.JoinLogChannel == "" {
 		fatal(errors.New("Please add log channel IDs"))
 	}
 
