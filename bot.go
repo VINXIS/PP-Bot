@@ -94,6 +94,7 @@ func main() {
 	fatal(err)
 	if len(values.Conf.CalcChannels) >= 0 && channelLog {
 		discord.AddHandler(logMessageHandler)
+		discord.AddHandler(logMessageEditHandler)
 		discord.AddHandler(roleHandler)
 		discord.AddHandler(joinHandler)
 		discord.AddHandler(leaveHandler)
@@ -186,10 +187,47 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Delete messages that are not commands
 		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
-			if values.Conf.MessageChannel != "" {
+			if values.Conf.MessageLogChannel != "" {
 				ch, err := s.Channel(m.ChannelID)
 				if err == nil {
-					s.ChannelMessageSend(values.Conf.MessageChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+					s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+				}
+			} else {
+				ch, err := s.Channel(m.ChannelID)
+				if err == nil {
+					log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+				} else {
+					log.Println("**" + m.Author.String() + "** tried to speak and said: " + m.Content + " (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+				}
+			}
+		}
+	}
+}
+
+// for edits, idk how to kill this message duplication
+func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
+	// Check if the message is to even be bothered to read
+	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
+		help := values.Helpregex.MatchString(m.Content)
+		add := values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content)
+		acc := values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
+		beatmap := values.Mapregex.MatchString(m.Content) || (len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
+		user := values.Userregex.MatchString(m.Content)
+		run := values.Runregex.MatchString(m.Content)
+		list := values.Listregex.MatchString(m.Content)
+		move := values.Moveregex.MatchString(m.Content)
+		delete := values.Delregex.MatchString(m.Content)
+		who := values.Whoregex.MatchString(m.Content)
+		listImport := values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0 && strings.HasSuffix(m.Attachments[0].Filename, ".json")
+		inServer := m.GuildID == values.Conf.ServerID
+
+		// Delete messages that are not commands
+		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
+			s.ChannelMessageDelete(m.ChannelID, m.ID)
+			if values.Conf.MessageLogChannel != "" {
+				ch, err := s.Channel(m.ChannelID)
+				if err == nil {
+					s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** and said: "+m.Content+" ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 				}
 			} else {
 				ch, err := s.Channel(m.ChannelID)
@@ -211,22 +249,22 @@ func roleHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 
 	auditLog, err := s.GuildAuditLog(values.Conf.ServerID, values.Conf.UserID, "", 25, -1)
 	if err != nil {
-		s.ChannelMessageSend(values.Conf.LogChannel, "A role was changed, but there was an error in obtaining the audit log!")
+		s.ChannelMessageSend(values.Conf.RoleLogChannel, "A role was changed, but there was an error in obtaining the audit log!")
 		return
 	}
 
 	roleLog := auditLog.AuditLogEntries[0]
 	roleAffectedUser, err := s.User(roleLog.TargetID)
 	if err != nil {
-		s.ChannelMessageSend(values.Conf.LogChannel, "A role was changed, but there was an error in obtaining the user!")
+		s.ChannelMessageSend(values.Conf.RoleLogChannel, "A role was changed, but there was an error in obtaining the user!")
 		return
 	}
 	roleAction := roleLog.Changes[0].Key
 	roleName := roleLog.Changes[0].NewValue.([]interface{})[0].(map[string]interface{})["name"].(string)
 	if roleAction == "$add" {
-		s.ChannelMessageSend(values.Conf.LogChannel, "The user **"+roleAffectedUser.String()+"** has been given the **"+roleName+"** role!")
+		s.ChannelMessageSend(values.Conf.RoleLogChannel, "The user **"+roleAffectedUser.String()+"** has been given the **"+roleName+"** role!")
 	} else if roleAction == "$remove" {
-		s.ChannelMessageSend(values.Conf.LogChannel, "The user **"+roleAffectedUser.String()+"** has lost the **"+roleName+"** role!")
+		s.ChannelMessageSend(values.Conf.RoleLogChannel, "The user **"+roleAffectedUser.String()+"** has lost the **"+roleName+"** role!")
 	}
 }
 
@@ -236,7 +274,7 @@ func joinHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 		return
 	}
 
-	s.ChannelMessageSend(values.Conf.LogChannel, "**"+m.User.String()+"** has joined!")
+	s.ChannelMessageSend(values.Conf.JoinLogChannel, "**"+m.User.String()+"** has joined!")
 }
 
 func leaveHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
@@ -245,7 +283,7 @@ func leaveHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
 		return
 	}
 
-	s.ChannelMessageSend(values.Conf.LogChannel, "**"+m.User.String()+"** has left!")
+	s.ChannelMessageSend(values.Conf.JoinLogChannel, "**"+m.User.String()+"** has left!")
 }
 
 func fatal(err error) {

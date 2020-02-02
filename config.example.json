@@ -1,8 +1,8 @@
 {
     "DiscordAPIKey": "",
-    "LogChannel": "NOT REQUIRED",
-    "CalcChannels": ["NOT REQUIRED"],
-    "MessageChannel": "NOT REQUIRED",
+    "LogChannel": "NOT REQUIRED IF NO --log",
+    "CalcChannels": ["NOT REQUIRED IF NO --log"],
+    "MessageChannel": "NOT REQUIRED IF NO --log",
     "OsuAPIKey": "",
     "PasteAPIKey": "",
     "UserID": "",

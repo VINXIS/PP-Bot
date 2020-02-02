@@ -109,6 +109,11 @@ func helpMap(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 			Inline: true,
 		},
 		&discordgo.MessageEmbedField{
+			Name:   "-r <start time> <end time>",
+			Value:  "Will zoom into the difficulty graph at the given specified time range.",
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
 			Name:   "-c <combo>",
 			Value:  "Will calculate PP using the given combo.",
 			Inline: true,
@@ -179,8 +184,8 @@ func helpAdd(embed *discordgo.MessageEmbed) *discordgo.MessageEmbed {
 	embed.Description = "`add` will add a map to a list."
 	embed.Fields = []*discordgo.MessageEmbedField{
 		&discordgo.MessageEmbedField{
-			Name:   "(-j|-l)",
-			Value:  "Will calculate using either the joz system if `-j`, or live if `-l`. If both are provided, it will default to joz. This is only for calculating the pp value if the map is successfully added to your list. You may calculate your list however you like later using `run`.",
+			Name:   "(-d|-j|-l)",
+			Value:  "Will calculate using either the delta system if `-d`, the joz system if `-j`, or live if `-l`. If both are provided, it will default to joz. This is only for calculating the pp value if the map is successfully added to your list. You may calculate your list however you like later using `run`.",
 			Inline: true,
 		},
 		&discordgo.MessageEmbedField{

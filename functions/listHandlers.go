@@ -216,14 +216,17 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Run command
-	process := exec.Command("dotnet", args...)
-	res, err := process.Output()
-	if err != nil {
+	var res []byte
+	if strings.Contains(m.Content, "-d") || osuType != "delta" {
+		process := exec.Command("dotnet", args...)
+		res, err = process.Output()
+		if err != nil {
+			process.Process.Kill()
+			s.ChannelMessageSend(m.ChannelID, "An error occured in processing the score. Please make sure your args are correct.")
+			return
+		}
 		process.Process.Kill()
-		s.ChannelMessageSend(m.ChannelID, "An error occured in processing the score. Please make sure your args are correct.")
-		return
 	}
-	process.Process.Kill()
 
 	// Save updated list
 	b, err := json.Marshal(list)
