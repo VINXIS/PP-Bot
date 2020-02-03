@@ -169,11 +169,6 @@ func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author == nil {
-		go s.ChannelMessageDelete(m.ChannelID, m.ID)
-		return
-	}
-
 	// Check if the message is to even be bothered to read
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 		help := values.Helpregex.MatchString(m.Content)
@@ -211,8 +206,7 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // for edits, idk how to kill this message duplication
 func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
-	if m.Author == nil {
-		go s.ChannelMessageDelete(m.ChannelID, m.ID)
+	if m.Author == nil { // Embed loading
 		return
 	}
 
