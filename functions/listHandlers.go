@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"os/exec"
@@ -240,7 +241,11 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, "Score saved! Here's the pp value of the given score based on the pp system given:\n```"+string(res)+"```")
+	if strings.Contains(m.Content, "-d") || osuType != "delta" {
+		s.ChannelMessageSend(m.ChannelID, "Score saved! Here's the pp value of the given score based on the pp system given:\n```"+string(res)+"```")
+	} else {
+		s.ChannelMessageSend(m.ChannelID, "Score saved!")
+	}
 }
 
 // ListMoveHandler lets the move scores between lists
@@ -586,8 +591,11 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	sort.Slice(PPScoreList, func(i, j int) bool { return PPScoreList[i].PP > PPScoreList[j].PP })
 
 	// Create sublist table
-	var tableData [][]string
-	var builder strings.Builder
+	var (
+		totalPP   float64
+		tableData [][]string
+		builder   strings.Builder
+	)
 	table := tablewriter.NewWriter(&builder)
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
@@ -599,7 +607,8 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if subListName != "" {
 		mainText += "Scores for the sublist: " + subListName + "\n"
 	}
-	for _, score := range PPScoreList {
+	for i, score := range PPScoreList {
+		totalPP += score.PP * math.Pow(0.95, float64(i))
 		scoreData := []string{
 			score.MapInfo,
 			strconv.FormatFloat(score.PP, 'f', 2, 64),
@@ -630,6 +639,7 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		tableData = append(tableData, scoreData)
 	}
+	mainText += "PP sum: " + strconv.FormatFloat(totalPP, 'f', 2, 64) + "\n"
 
 	// Add to table and write to string
 	table.AppendBulk(tableData)

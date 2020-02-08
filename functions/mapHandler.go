@@ -53,10 +53,13 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 				if err != nil {
 					s.ChannelMessageSend(m.ChannelID, "There was an issue in fetching beatmap info from the osu! API! Try again and/or see if osu! is down here: https://status.ppy.sh/")
 					return "", "", errors.New("no osu!api response")
+				} else if len(beatmaps) == 0 {
+					s.ChannelMessageSend(m.ChannelID, "No map exists for this link!")
+					return "", "", errors.New("no map found")
 				}
 				beatmap := beatmaps[0]
 				mapInfo = submatches[3] + " " + beatmap.Artist + " - " + beatmap.Title + " [" + beatmap.DiffName + "]"
-			case "s":
+			case "s", "beatmapsets":
 				setid, _ := strconv.Atoi(submatches[3])
 				beatmaps, err := values.OsuAPI.GetBeatmaps(osuapi.GetBeatmapsOpts{
 					BeatmapSetID: setid,
@@ -64,6 +67,9 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 				if err != nil {
 					s.ChannelMessageSend(m.ChannelID, "There was an issue in fetching beatmap info from the osu! API! Try again and/or see if osu! is down here: https://status.ppy.sh/")
 					return "", "", errors.New("no osu!api response")
+				} else if len(beatmaps) == 0 {
+					s.ChannelMessageSend(m.ChannelID, "No map exists for this link!")
+					return "", "", errors.New("no map found")
 				}
 				sort.Slice(beatmaps, func(i, j int) bool { return beatmaps[i].DifficultyRating > beatmaps[j].DifficultyRating })
 				beatmap := beatmaps[0]
@@ -112,7 +118,7 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 
 		}
 
-		mapInfo = values.Invalidregex.ReplaceAllString(strconv.Itoa(-1) + " " + artist + " - " + title + " [" + version + "]", "")
+		mapInfo = values.Invalidregex.ReplaceAllString(strconv.Itoa(-1)+" "+artist+" - "+title+" ["+version+"]", "")
 
 		err = ioutil.WriteFile("./"+mapInfo+".osu", body, 0644)
 		if err != nil {

@@ -22,11 +22,14 @@ func main() {
 	// Get args
 	build := false
 	channelLog := false
+	quiet := false
 	for _, arg := range os.Args {
 		if arg == "-b" || arg == "--build" {
 			build = true
 		} else if arg == "-l" || arg == "--log" {
 			channelLog = true
+		} else if arg == "-q" || arg == "--quiet" {
+			quiet = true
 		}
 	}
 
@@ -107,7 +110,7 @@ func main() {
 	err = discord.Open()
 	fatal(err)
 	log.Println("Logged in as " + discord.State.User.String())
-	if !channelLog {
+	if !channelLog && !quiet {
 		for _, ch := range values.Conf.CalcChannels {
 			go discord.ChannelMessageSend(ch, "osu! calculations are now up. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 		}
@@ -118,7 +121,7 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Kill)
 	<-sc
 
-	if !channelLog {
+	if !channelLog && !quiet {
 		for _, ch := range values.Conf.CalcChannels {
 			go discord.ChannelMessageSend(ch, "osu! calculations are now going down. ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
 		}
