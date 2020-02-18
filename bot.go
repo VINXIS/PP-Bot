@@ -261,6 +261,17 @@ func roleHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 	}
 
 	roleLog := auditLog.AuditLogEntries[0]
+
+	// Check the time cuz this just spams the latest rn
+	timeStamp, err := discordgo.SnowflakeTimestamp(roleLog.ID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if time.Now().Sub(timeStamp).Hours() > 1 {
+		return
+	}
+
 	roleAffectedUser, err := s.User(roleLog.TargetID)
 	if err != nil {
 		s.ChannelMessageSend(values.Conf.RoleLogChannel, "A role was changed, but there was an error in obtaining the user!")
