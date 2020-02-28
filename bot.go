@@ -166,11 +166,12 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		move := values.Moveregex.MatchString(m.Content)
 		delete := values.Delregex.MatchString(m.Content)
 		who := values.Whoregex.MatchString(m.Content)
+		build := values.Buildregex.MatchString(m.Content)
 		listImport := values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0 && strings.HasSuffix(m.Attachments[0].Filename, ".json")
 		inServer := m.GuildID == values.Conf.ServerID
 
 		// Delete messages that are not commands
-		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
+		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !build && !listImport {
 			go s.ChannelMessageDelete(m.ChannelID, m.ID)
 			if values.Conf.MessageLogChannel != "" {
 				ch, err := s.Channel(m.ChannelID)
