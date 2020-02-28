@@ -41,25 +41,19 @@ func main() {
 		_, err := os.Stat("./cache")
 		if os.IsNotExist(err) {
 			err = os.MkdirAll("./cache", 0755)
-			if err != nil {
-				fatal(err)
-			}
+
 		}
 
 		// Create lists folder
 		_, err = os.Stat("./lists")
 		if os.IsNotExist(err) {
 			err = os.MkdirAll("./lists", 0755)
-			if err != nil {
-				fatal(err)
-			}
+			fatal(err)
 		}
 
 		// Change console type for proper output
 		_, err = exec.Command("chcp", "65001").Output()
-		if err != nil {
-			fatal(err)
-		}
+		fatal(err)
 	} else if values.Conf.RoleLogChannel == "" || values.Conf.MessageLogChannel == "" || values.Conf.JoinLogChannel == "" {
 		fatal(errors.New("Please add log channel IDs"))
 	}
@@ -67,27 +61,8 @@ func main() {
 	if build {
 		// Build osu-tools
 		log.Println("Building osu-tools...")
-		delta := exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release")
-		joz := exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release")
-		live := exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release")
-		_, err := delta.Output()
-		if err != nil {
-			delta.Process.Kill()
-			fatal(err)
-		}
-		delta.Process.Kill()
-		_, err = joz.Output()
-		if err != nil {
-			joz.Process.Kill()
-			fatal(err)
-		}
-		joz.Process.Kill()
-		_, err = live.Output()
-		if err != nil {
-			joz.Process.Kill()
-			fatal(err)
-		}
-		live.Process.Kill()
+		err := functions.Build()
+		fatal(err)
 		log.Println("Built osu-tools!")
 	}
 
@@ -165,6 +140,13 @@ func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 			go functions.ListWhoHandler(s, m)
+		case values.Buildregex.MatchString(m.Content): // Build osu-tools
+			if m.Author.ID != values.Conf.UserID {
+				s.ChannelMessageSend(m.ChannelID, "Y̴̢̨̰̗̟̣̳͔̻͑̑́̄̍͜O̵̧̨̳̗̘͍̞̼̳͌͝͠U̷̝̫͕͖̭͙̙̙̗̅̀͊̂͒́̓͗͌̐̈́̚͝͝ ̴̢̲̬͔͛͆̒̃̈́͗̑̒̈́̽̅̈́̓À̶̘̬̯̂̑̈́̈́̓̉̐͑́͘R̷̤͎͖̲̃͑̓͌̈́̀̏͠ͅE̸͇̳̬͓̤̅̌̀̈́̎ ̸͎̗̹̄̈́̃̈́̀N̶̡̢̨̝̺̥̪̑̿̔̊̅̃͊̊̈́͠ͅƠ̸̢̇̑̔̃̈́̇͊̍̚͘͝͠͠ͅṰ̸̦̜̈́͌̍̋͆́̄̈̅́̾͜ ̴̭̙͉̪̝̗̳͙̝̼͉̦̤̊̅͂͂̇̾͠M̷̛̪͌̓̽̂̏̐͠Ỹ̴̦̬̳̬̲̼̰͉̗͔͐̔͌͑̌͑͊̔̓̈́͗͘͝͠ ̵͓̮́̾͌͗̔̓͂́M̶̡͉̹̬̱͔͑̈͛̕̚͘A̶̢̪̮̳̯̤̫̠̮̦̲̠̱̠͐̄̈́̚̚͜͝S̴̝̩̫̖̞̣̪̤͙̼̪̦̱̰̯͒̿̆͌͐̎̕̚̚T̵̨̳̝̜͔̭̳̪̄̀͊̈͒̋͝Ẽ̸̬͙̺̺̝̺͐̈̿̿̿͑̓̑͐̈́͘Ŕ̴̨̢̟̱̪̠̮̮̫̰̭̂͑̐̾͂̏̈̀͛͝")
+				s.ChannelMessageDelete(m.ChannelID, m.ID)
+				return
+			}
+			go functions.BuildHandler(s, m)
 		case values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0 && strings.HasSuffix(m.Attachments[0].Filename, ".json"): // Import a map list
 			go functions.ListImportHandler(s, m)
 		}
@@ -225,11 +207,12 @@ func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
 		move := values.Moveregex.MatchString(m.Content)
 		delete := values.Delregex.MatchString(m.Content)
 		who := values.Whoregex.MatchString(m.Content)
+		build := values.Buildregex.MatchString(m.Content)
 		listImport := values.Importregex.MatchString(m.Content) && len(m.Attachments) > 0 && strings.HasSuffix(m.Attachments[0].Filename, ".json")
 		inServer := m.GuildID == values.Conf.ServerID
 
 		// Delete messages that are not commands
-		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !listImport {
+		if inServer && !help && !add && !acc && !beatmap && !user && !run && !list && !move && !delete && !who && !build && !listImport {
 			go s.ChannelMessageDelete(m.ChannelID, m.ID)
 			if values.Conf.MessageLogChannel != "" {
 				ch, err := s.Channel(m.ChannelID)

@@ -83,12 +83,23 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var graphContent []byte
 	switch osuType {
 	case "delta":
-		graphContent, err = ioutil.ReadFile("./cache/graph_" + mapID + "_" + mods + ".txt")
-		if err != nil {
-			graphContent, err = ioutil.ReadFile("./cache/graph__" + mods + ".txt")
+		if values.Fingerregex.MatchString(m.Content) {
+			graphContent, err = ioutil.ReadFile("./cache/graph_" + mapID + "_" + mods + "_finger.txt")
 			if err != nil {
-				s.ChannelMessageSend(m.ChannelID, "Could not find graph data!")
-				return
+				graphContent, err = ioutil.ReadFile("./cache/graph__" + mods + "_finger.txt")
+				if err != nil {
+					s.ChannelMessageSend(m.ChannelID, "Could not find graph data!")
+					return
+				}
+			}
+		} else {
+			graphContent, err = ioutil.ReadFile("./cache/graph_" + mapID + "_" + mods + ".txt")
+			if err != nil {
+				graphContent, err = ioutil.ReadFile("./cache/graph__" + mods + ".txt")
+				if err != nil {
+					s.ChannelMessageSend(m.ChannelID, "Could not find graph data!")
+					return
+				}
 			}
 		}
 	case "joz":
@@ -145,6 +156,8 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	args = []string{"plot.py", skill, mapID, strconv.Itoa(start), strconv.Itoa(end), strconv.Itoa(difference), mapInfo, mods, "delta"}
 	if osuType == "joz" {
 		args[len(args)-1] = "joz"
+	} else if values.Fingerregex.MatchString(m.Content) {
+		args[len(args)-1] = "finger"
 	}
 
 	// Generate graph using python script

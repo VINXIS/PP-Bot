@@ -12,6 +12,8 @@ var (
 	Addregex = regexp.MustCompile(`!add\s+(.+)`)
 	// Accgraphregex checks if a command was made to create an acc graph for the map
 	Accgraphregex = regexp.MustCompile(`!acc`)
+	// Buildregex checks if a command was made to build osu-tools
+	Buildregex = regexp.MustCompile(`!build`)
 	// Runregex checks if a command was made to run their list
 	Runregex = regexp.MustCompile(`!run`)
 	// Listregex checks if a command was made to show their list
@@ -34,6 +36,8 @@ var (
 
 	// PPregex checks if a tag for pp values was used
 	PPregex = regexp.MustCompile(`-pp`)
+	// Fingerregex checks if a tag for the finger control graph was used
+	Fingerregex = regexp.MustCompile(`-f`)
 
 	// Titleregex gets the title from a .osu file
 	Titleregex = regexp.MustCompile(`Title:(.*)(\r|\n)`)

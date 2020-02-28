@@ -7,12 +7,39 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 
 	"../structs"
 	"../values"
 	"github.com/bwmarrin/discordgo"
 )
+
+// Build builds osu-tools
+func Build() error {
+	delta := exec.Command("dotnet", "build", "./osu-tools/delta/osu-tools/PerformanceCalculator", "-c", "Release")
+	joz := exec.Command("dotnet", "build", "./osu-tools/joz/osu-tools/PerformanceCalculator", "-c", "Release")
+	live := exec.Command("dotnet", "build", "./osu-tools/live/osu-tools/PerformanceCalculator", "-c", "Release")
+	_, err := delta.Output()
+	if err != nil {
+		delta.Process.Kill()
+		return err
+	}
+	delta.Process.Kill()
+	_, err = joz.Output()
+	if err != nil {
+		joz.Process.Kill()
+		return err
+	}
+	joz.Process.Kill()
+	_, err = live.Output()
+	if err != nil {
+		joz.Process.Kill()
+		return err
+	}
+	live.Process.Kill()
+	return nil
+}
 
 // accGeneration returns 300s, 100s, and misses basde
 func accGeneration(target float64, objects, misses int) (greats, goods, mehs int) {
