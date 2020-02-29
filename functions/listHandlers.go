@@ -576,6 +576,10 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		process.Process.Kill()
 
+		if len(values.PPparseregex.FindStringSubmatch(string(res))) == 0 {
+			continue
+		}
+
 		ppVal, err := strconv.ParseFloat(values.PPparseregex.FindStringSubmatch(string(res))[1], 64)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Error in parsing the pp calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
