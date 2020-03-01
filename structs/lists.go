@@ -39,6 +39,15 @@ type PPScore struct {
 	PP float64
 }
 
+// SRScore is an extension of Score where the SR is also stored
+type SRScore struct {
+	Score
+	SR     float64
+	Aim    float64
+	Tap    float64
+	Finger float64
+}
+
 // GetList gets either a new list for the user, or the list saved for the user, the bool tells if it is new or not.
 func GetList(u *discordgo.User) (List, bool) {
 	newList := List{

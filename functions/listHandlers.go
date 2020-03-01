@@ -472,6 +472,11 @@ func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // ListRunHandler lets the user run their list
 func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if values.SRregex.MatchString(m.Content) && values.Jozregex.MatchString(m.Content) {
+		s.ChannelMessageSend(m.ChannelID, "Printing SR values for lists only works for delta and live at the moment.")
+		return
+	}
+
 	// Check for mention
 	user := m.Author
 	if len(m.Mentions) >= 1 {
@@ -492,6 +497,9 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Create args foundation
 	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu"}
+	if values.SRregex.MatchString(m.Content) {
+		args = []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "difficulty"}
+	}
 
 	// Check for other osu! versions
 	if values.Jozregex.MatchString(m.Content) {
@@ -541,26 +549,29 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Run scores
 	var PPScoreList []structs.PPScore
+	var SRScoreList []structs.SRScore
 	for _, score := range scoresNoDupe {
 		tempArgs := append(args, "./cache/"+strconv.Itoa(score.BeatmapID)+".osu")
 
-		if score.UseAccuracy && score.Accuracy > 0 && score.Accuracy < 100 {
-			tempArgs = append(tempArgs, "-a", strconv.FormatFloat(score.Accuracy, 'f', 2, 64))
-		} else {
-			if score.Goods > 0 {
-				tempArgs = append(tempArgs, "-G", strconv.Itoa(score.Goods))
+		if !values.SRregex.MatchString(m.Content) {
+			if score.UseAccuracy && score.Accuracy > 0 && score.Accuracy < 100 {
+				tempArgs = append(tempArgs, "-a", strconv.FormatFloat(score.Accuracy, 'f', 2, 64))
+			} else {
+				if score.Goods > 0 {
+					tempArgs = append(tempArgs, "-G", strconv.Itoa(score.Goods))
+				}
+				if score.Mehs > 0 {
+					tempArgs = append(tempArgs, "-M", strconv.Itoa(score.Mehs))
+				}
 			}
-			if score.Mehs > 0 {
-				tempArgs = append(tempArgs, "-M", strconv.Itoa(score.Mehs))
+
+			if score.Misses > 0 {
+				tempArgs = append(tempArgs, "-X", strconv.Itoa(score.Misses))
 			}
-		}
 
-		if score.Misses > 0 {
-			tempArgs = append(tempArgs, "-X", strconv.Itoa(score.Misses))
-		}
-
-		if score.Combo > 0 {
-			tempArgs = append(tempArgs, "--combo", strconv.Itoa(score.Combo))
+			if score.Combo > 0 {
+				tempArgs = append(tempArgs, "--combo", strconv.Itoa(score.Combo))
+			}
 		}
 
 		for i := 0; i < len(score.Mods); i += 2 {
@@ -576,22 +587,69 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		process.Process.Kill()
 
-		if len(values.PPparseregex.FindStringSubmatch(string(res))) == 0 {
-			continue
-		}
+		if values.SRregex.MatchString(m.Content) {
+			vals := values.SRparseregex.FindStringSubmatch(strings.Replace(string(res), "...", "", -1))
+			if len(vals) == 0 {
+				s.ChannelMessageSend(m.ChannelID, "Error in obtaining the sr calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
+				continue
+			}
 
-		ppVal, err := strconv.ParseFloat(values.PPparseregex.FindStringSubmatch(string(res))[1], 64)
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "Error in parsing the pp calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
-			continue
-		}
+			var sr, aim, speed, finger float64
+			var errExist bool
+			for i := 1; i < 8; i += 2 {
+				value, err := strconv.ParseFloat(vals[i], 64)
+				if err != nil {
+					errExist = true
+					s.ChannelMessageSend(m.ChannelID, "Error in parsing the sr calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
+					break
+				}
+				switch i {
+				case 1:
+					sr = value
+				case 3:
+					aim = value
+				case 5:
+					speed = value
+				case 7:
+					if !values.Liveregex.MatchString(m.Content) {
+						finger = value
+					}
+				}
+			}
+			if errExist {
+				continue
+			}
+			SRScoreList = append(SRScoreList, structs.SRScore{
+				Score:  score,
+				SR:     sr,
+				Aim:    aim,
+				Tap:    speed,
+				Finger: finger,
+			})
+		} else {
+			if len(values.PPparseregex.FindStringSubmatch(string(res))) == 0 {
+				s.ChannelMessageSend(m.ChannelID, "Error in obtaining the pp calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
+				continue
+			}
 
-		PPScoreList = append(PPScoreList, structs.PPScore{
-			Score: score,
-			PP:    ppVal,
-		})
+			ppVal, err := strconv.ParseFloat(values.PPparseregex.FindStringSubmatch(string(res))[1], 64)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Error in parsing the pp calc for the score on beatmap ID "+strconv.Itoa(score.BeatmapID))
+				continue
+			}
+
+			PPScoreList = append(PPScoreList, structs.PPScore{
+				Score: score,
+				PP:    ppVal,
+			})
+		}
 	}
 
+	if values.Fingerregex.MatchString(m.Content) {
+		sort.Slice(SRScoreList, func(i, j int) bool { return SRScoreList[i].Finger > SRScoreList[j].Finger })
+	} else {
+		sort.Slice(SRScoreList, func(i, j int) bool { return SRScoreList[i].SR > SRScoreList[j].SR })
+	}
 	sort.Slice(PPScoreList, func(i, j int) bool { return PPScoreList[i].PP > PPScoreList[j].PP })
 
 	// Create sublist table
@@ -604,46 +662,71 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
-	table.SetHeader([]string{"Map Info", "PP", "Mods", "Combo", "Acc", "100s", "50s", "Misses"})
+	if values.SRregex.MatchString(m.Content) {
+		if values.Liveregex.MatchString(m.Content) {
+			table.SetHeader([]string{"Map Info", "SR", "Mods", "Aim", "Speed"})
+		} else {
+			table.SetHeader([]string{"Map Info", "SR", "Mods", "Aim", "Tap", "Finger"})
+		}
+	} else {
+		table.SetHeader([]string{"Map Info", "PP", "Mods", "Combo", "Acc", "100s", "50s", "Misses"})
+	}
 
 	// Add score info to tabledata
 	var mainText string
 	if subListName != "" {
 		mainText += "Scores for the sublist: " + subListName + "\n"
 	}
-	for i, score := range PPScoreList {
-		totalPP += score.PP * math.Pow(0.95, float64(i))
-		scoreData := []string{
-			score.MapInfo,
-			strconv.FormatFloat(score.PP, 'f', 2, 64),
-			score.Mods,
-			strconv.Itoa(score.Combo),
-			"",
-			"",
-			"",
-			"",
+	if values.SRregex.MatchString(m.Content) {
+		for _, score := range SRScoreList {
+			scoreData := []string{
+				score.MapInfo,
+				strconv.FormatFloat(score.SR, 'f', 2, 64),
+				score.Mods,
+				strconv.FormatFloat(score.Aim, 'f', 2, 64),
+				strconv.FormatFloat(score.Tap, 'f', 2, 64),
+				strconv.FormatFloat(score.Finger, 'f', 2, 64),
+			}
+			if values.Liveregex.MatchString(m.Content) {
+				scoreData = scoreData[:len(scoreData)-1]
+			}
+			tableData = append(tableData, scoreData)
 		}
+	} else {
+		for i, score := range PPScoreList {
+			totalPP += score.PP * math.Pow(0.95, float64(i))
+			scoreData := []string{
+				score.MapInfo,
+				strconv.FormatFloat(score.PP, 'f', 2, 64),
+				score.Mods,
+				strconv.Itoa(score.Combo),
+				"",
+				"",
+				"",
+				"",
+			}
 
-		// Exceptions
-		if score.Mods == "" {
-			scoreData[2] = "NM"
-		}
-		if score.Combo == 0 {
-			scoreData[3] = "FC"
-		}
-		if score.UseAccuracy {
-			scoreData[4] = strconv.FormatFloat(score.Accuracy, 'f', 2, 64) + "%"
-		} else {
-			scoreData[5] = strconv.Itoa(score.Goods)
-			scoreData[6] = strconv.Itoa(score.Mehs)
-		}
-		if score.Misses != 0 {
-			scoreData[7] = strconv.Itoa(score.Misses)
-		}
+			// Exceptions
+			if score.Mods == "" {
+				scoreData[2] = "NM"
+			}
+			if score.Combo == 0 {
+				scoreData[3] = "FC"
+			}
+			if score.UseAccuracy {
+				scoreData[4] = strconv.FormatFloat(score.Accuracy, 'f', 2, 64) + "%"
+			} else {
+				scoreData[5] = strconv.Itoa(score.Goods)
+				scoreData[6] = strconv.Itoa(score.Mehs)
+			}
+			if score.Misses != 0 {
+				scoreData[7] = strconv.Itoa(score.Misses)
+			}
 
-		tableData = append(tableData, scoreData)
+			tableData = append(tableData, scoreData)
+		}
+		mainText += "PP sum: " + strconv.FormatFloat(totalPP, 'f', 2, 64) + "\n"
 	}
-	mainText += "PP sum: " + strconv.FormatFloat(totalPP, 'f', 2, 64) + "\n"
 
 	// Add to table and write to string
 	table.AppendBulk(tableData)

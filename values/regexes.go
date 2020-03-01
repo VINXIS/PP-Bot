@@ -36,6 +36,8 @@ var (
 
 	// PPregex checks if a tag for pp values was used
 	PPregex = regexp.MustCompile(`-pp`)
+	// SRregex checks if a tag for sr values was used
+	SRregex = regexp.MustCompile(`-sr`)
 	// Fingerregex checks if a tag for the finger control graph was used
 	Fingerregex = regexp.MustCompile(`-f`)
 
@@ -56,6 +58,8 @@ var (
 	Tapregex = regexp.MustCompile(`Tap\s+:\s+((\d+)\.?\d+)`)
 	// AccPPregex gets the acc pp from a pp calc result
 	AccPPregex = regexp.MustCompile(`Accuracy\s+:\s+((\d+)\.?\d+)`)
+	// SRparseregex gets the sr from a sr calc result
+	SRparseregex = regexp.MustCompile(`((\d|\.)+)│\s*((\d|\.)+)│\s*((\d|\.)+)│\s*((\d|\.)+)│`)
 
 	// Spamfileregex checks for the spam files created by the custom osu-tools
 	Spamfileregex = regexp.MustCompile(`\d*(jumpaim|speed|stamina|streamaim|aimcontrol|fingercontrol|values|test).txt`)
