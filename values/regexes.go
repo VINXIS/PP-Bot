@@ -29,6 +29,8 @@ var (
 
 	// Mapregex checks if a map was linked
 	Mapregex = regexp.MustCompile(`(osu|old)\.ppy\.sh\/(s|b|beatmaps|beatmapsets)\/(\d+)(#osu\/(\d+))?`)
+	// Attachregex checks if a discord attachment was linked
+	Attachregex = regexp.MustCompile(`cdn\.discordapp\.com\/attachments\/(\d+)\/(\d+)/(\S+)\.osu`)
 	// Userregex checks if a user was linked
 	Userregex = regexp.MustCompile(`(osu|old)\.ppy\.sh\/(u|users)\/(\S+)`)
 	// Fileregex checks if a map was attached

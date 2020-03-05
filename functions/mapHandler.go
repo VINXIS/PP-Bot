@@ -90,8 +90,15 @@ func MapHandler(s *discordgo.Session, m *discordgo.MessageCreate) (string, strin
 			s.ChannelMessageSend(m.ChannelID, "Unable to create local file from discord attachment.")
 			return "", "", errors.New("unable to create local file")
 		}
-	} else if len(m.Attachments) > 0 { // If a map was attached
-		resp, err := http.Get(m.Attachments[0].URL)
+	} else if len(m.Attachments) > 0 || values.Attachregex.MatchString(m.Content) { // If a map was attached / a discord link was sent
+		var link string
+		if values.Attachregex.MatchString(m.Content) {
+			link = "https://" + values.Attachregex.FindStringSubmatch(m.Content)[0]
+		} else {
+			link = m.Attachments[0].URL
+		}
+
+		resp, err := http.Get(link)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Unable to reach discord attachment URL.")
 			return "", "", errors.New("unable to reach discord attachment URL")

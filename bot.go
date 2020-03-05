@@ -117,7 +117,7 @@ func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			go functions.ListAddHandler(s, m)
 		case values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename)): // Get accuracy graph for a map
 			go functions.AccGraphHandler(s, m)
-		case values.Mapregex.MatchString(m.Content), len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename): // Get map SR / PP
+		case values.Attachregex.MatchString(m.Content), values.Mapregex.MatchString(m.Content), len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename): // Get map SR / PP
 			if values.PPregex.MatchString(m.Content) {
 				go functions.MapPPHandler(s, m)
 			} else {
@@ -159,7 +159,7 @@ func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		help := values.Helpregex.MatchString(m.Content)
 		add := values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content)
 		acc := values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
-		beatmap := values.Mapregex.MatchString(m.Content) || (len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
+		beatmap := values.Attachregex.MatchString(m.Content) || values.Mapregex.MatchString(m.Content) || (len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
 		user := values.Userregex.MatchString(m.Content)
 		run := values.Runregex.MatchString(m.Content)
 		list := values.Listregex.MatchString(m.Content)
@@ -201,7 +201,7 @@ func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
 		help := values.Helpregex.MatchString(m.Content)
 		add := values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content)
 		acc := values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
-		beatmap := values.Mapregex.MatchString(m.Content) || (len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
+		beatmap := values.Attachregex.MatchString(m.Content) || values.Mapregex.MatchString(m.Content) || (len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
 		user := values.Userregex.MatchString(m.Content)
 		run := values.Runregex.MatchString(m.Content)
 		list := values.Listregex.MatchString(m.Content)
