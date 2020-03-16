@@ -83,7 +83,9 @@ func main() {
 		discord.AddHandler(normalMessageHandler)
 	}
 	err = discord.Open()
-	fatal(err)
+	for err != nil {
+		err = discord.Open()
+	}
 	log.Println("Logged in as " + discord.State.User.String())
 	if !channelLog && !quiet {
 		for _, ch := range values.Conf.CalcChannels {
