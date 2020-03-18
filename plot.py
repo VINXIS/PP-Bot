@@ -63,24 +63,6 @@ elif version == "delta":
     axarr[1].set_xlabel("Time (s)")
     axarr[1].set_ylabel("Miss Probability")
     plt.title(mapinfo)
-elif version == "finger":
-    if os.path.exists("cache/graph_" + beatmapid + "_" + mods + "_finger.txt"):
-        a = np.transpose(np.loadtxt("cache/graph_" + beatmapid + "_" + mods + "_finger.txt"))
-    elif os.path.exists("cache/graph__" + mods + "_finger.txt"):
-        a = np.transpose(np.loadtxt("cache/graph__" + mods + "_finger.txt"))
-    
-    times, totalStrains, strains = a[0], a[1], a[2]
-
-    fig, axarr = plt.subplots(2, sharex=True, figsize=[48,6])
-
-    axarr[0].plot(times, strains, '.', alpha=0.8)
-
-    axarr[0].set_ylabel("Specific note strains")
-
-    axarr[1].plot(times, totalStrains, '.-')
-    axarr[1].set_xlabel("Time (s)")
-    axarr[1].set_ylabel("Total note strains")
-    plt.title(mapinfo + " - Finger Control")
 
 plt.xlim(start, end)
 plt.xticks(np.arange(start, end, ticks))

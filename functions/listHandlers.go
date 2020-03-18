@@ -645,12 +645,11 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if values.Fingerregex.MatchString(m.Content) {
-		sort.Slice(SRScoreList, func(i, j int) bool { return SRScoreList[i].Finger > SRScoreList[j].Finger })
-	} else {
+	if values.SRregex.MatchString(m.Content) {
 		sort.Slice(SRScoreList, func(i, j int) bool { return SRScoreList[i].SR > SRScoreList[j].SR })
+	} else {
+		sort.Slice(PPScoreList, func(i, j int) bool { return PPScoreList[i].PP > PPScoreList[j].PP })
 	}
-	sort.Slice(PPScoreList, func(i, j int) bool { return PPScoreList[i].PP > PPScoreList[j].PP })
 
 	// Create sublist table
 	var (
