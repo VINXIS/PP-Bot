@@ -40,6 +40,10 @@ var (
 	PPregex = regexp.MustCompile(`-pp`)
 	// SRregex checks if a tag for sr values was used
 	SRregex = regexp.MustCompile(`-sr`)
+	// Fingerregex checks if a tag for the finger control graph was used
+	Fingerregex = regexp.MustCompile(`-f`)
+	// TapGraphregex checks if a tag for the tap graph was used
+	TapGraphregex = regexp.MustCompile(`-t`)
 
 	// Titleregex gets the title from a .osu file
 	Titleregex = regexp.MustCompile(`Title:(.*)(\r|\n)`)

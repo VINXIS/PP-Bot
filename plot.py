@@ -63,6 +63,55 @@ elif version == "delta":
     axarr[1].set_xlabel("Time (s)")
     axarr[1].set_ylabel("Miss Probability")
     plt.title(mapinfo)
+elif version == "tap":
+    if os.path.exists("cache/graph_" + beatmapid + "_" + mods + "_tap.txt"):
+        a = np.transpose(np.loadtxt("cache/graph_" + beatmapid + "_" + mods + "_tap.txt"))
+    elif os.path.exists("cache/graph__" + mods + "_tap.txt"):
+        a = np.transpose(np.loadtxt("cache/graph__" + mods + "_tap.txt"))
+
+    times, totalStrains1, totalStrains2, totalStrains3, totalStrains4, strains = a[0], a[1], a[2], a[3], a[4], a[5]
+
+    fig, axarr = plt.subplots(5, sharex=True, figsize=[48,15])
+
+    axarr[0].plot(times, strains, '.', alpha=0.8)
+
+    axarr[0].set_ylabel("Specific note strains")
+
+    axarr[1].plot(times, totalStrains1, '.-')
+    axarr[1].set_xlabel("Time (s)")
+    axarr[1].set_ylabel("Total note strains 9.97418")
+
+    axarr[2].plot(times, totalStrains2, '.-')
+    axarr[2].set_xlabel("Time (s)")
+    axarr[2].set_ylabel("Total note strains 1.82212")
+    
+    axarr[3].plot(times, totalStrains3, '.-')
+    axarr[3].set_xlabel("Time (s)")
+    axarr[3].set_ylabel("Total note strains 0.332871")
+
+    axarr[4].plot(times, totalStrains4, '.-')
+    axarr[4].set_xlabel("Time (s)")
+    axarr[4].set_ylabel("Total note strains 0.0608101")
+
+    plt.title(mapinfo + " - Finger Control")
+elif version == "finger":
+    if os.path.exists("cache/graph_" + beatmapid + "_" + mods + "_finger.txt"):
+        a = np.transpose(np.loadtxt("cache/graph_" + beatmapid + "_" + mods + "_finger.txt"))
+    elif os.path.exists("cache/graph__" + mods + "_finger.txt"):
+        a = np.transpose(np.loadtxt("cache/graph__" + mods + "_finger.txt"))
+
+    times, totalStrains, strains = a[0], a[1], a[2]
+
+    fig, axarr = plt.subplots(2, sharex=True, figsize=[48,6])
+
+    axarr[0].plot(times, strains, '.', alpha=0.8)
+
+    axarr[0].set_ylabel("Specific note strains")
+
+    axarr[1].plot(times, totalStrains, '.-')
+    axarr[1].set_xlabel("Time (s)")
+    axarr[1].set_ylabel("Total note strains")
+    plt.title(mapinfo + " - Finger Control")
 
 plt.xlim(start, end)
 plt.xticks(np.arange(start, end, ticks))
