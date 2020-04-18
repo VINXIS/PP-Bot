@@ -16,6 +16,7 @@ type Config struct {
 	MessageLogChannel string
 	JoinLogChannel    string
 	CalcChannels      []string
+	WhitelistRoles    []string
 	OsuAPIKey         string
 	PasteAPIKey       string
 	UserID            string

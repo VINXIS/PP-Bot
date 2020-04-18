@@ -18,6 +18,8 @@ import (
 	"github.com/thehowl/go-osuapi"
 )
 
+var pings = make(map[string]time.Time)
+
 func main() {
 	// Get args
 	build := false
@@ -158,6 +160,42 @@ func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Check if the message is to even be bothered to read
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
+
+		// Check if user has whitelist role
+		for _, role := range m.Member.Roles {
+			for _, whitelist := range values.Conf.WhitelistRoles {
+				if whitelist == role {
+					return
+				}
+			}
+		}
+
+		// Check for pings
+		if len(m.Mentions) > 0 || len(m.MentionRoles) > 0 {
+			go s.ChannelMessageDelete(m.ChannelID, m.ID)
+			lastPing, exist := pings[m.Author.ID]
+			if !exist || time.Now().Sub(lastPing).Hours() > 24 {
+				go s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+" Do not ping others, or else you will be **banned.**")
+				pings[m.Author.ID] = time.Now()
+			} else if time.Now().Sub(lastPing).Hours() < 24 {
+				go s.GuildBanCreateWithReason(m.GuildID, m.Author.ID, "Pinging twice within 24 hours.", -1)
+				go delete(pings, m.Author.ID)
+				if values.Conf.MessageLogChannel != "" {
+					ch, err := s.Channel(m.ChannelID)
+					if err == nil {
+						go s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** has now been **banned.** ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+					}
+				} else {
+					ch, err := s.Channel(m.ChannelID)
+					if err == nil {
+						go log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and has now been **banned.** (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					} else {
+						go log.Println("**" + m.Author.String() + "** tried to speak and has now been **banned.** (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					}
+				}
+			}
+		}
+
 		help := values.Helpregex.MatchString(m.Content)
 		add := values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content)
 		acc := values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
@@ -200,6 +238,42 @@ func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
 
 	// Check if the message is to even be bothered to read
 	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
+
+		// Check if user has whitelist role
+		for _, role := range m.Member.Roles {
+			for _, whitelist := range values.Conf.WhitelistRoles {
+				if whitelist == role {
+					return
+				}
+			}
+		}
+
+		// Check for pings
+		if len(m.Mentions) > 0 || len(m.MentionRoles) > 0 {
+			go s.ChannelMessageDelete(m.ChannelID, m.ID)
+			lastPing, exist := pings[m.Author.ID]
+			if !exist || time.Now().Sub(lastPing).Hours() > 24 {
+				go s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+" Do not ping others, or else you will be **banned.**")
+				pings[m.Author.ID] = time.Now()
+			} else if time.Now().Sub(lastPing).Hours() < 24 {
+				go s.GuildBanCreateWithReason(m.GuildID, m.Author.ID, "Pinging twice within 24 hours.", -1)
+				go delete(pings, m.Author.ID)
+				if values.Conf.MessageLogChannel != "" {
+					ch, err := s.Channel(m.ChannelID)
+					if err == nil {
+						go s.ChannelMessageSend(values.Conf.MessageLogChannel, "**"+m.Author.String()+"** tried to speak in **#"+ch.Name+"** has now been **banned.** ("+strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1)+")")
+					}
+				} else {
+					ch, err := s.Channel(m.ChannelID)
+					if err == nil {
+						go log.Println("**" + m.Author.String() + "** tried to speak in **#" + ch.Name + "** and has now been **banned.** (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					} else {
+						go log.Println("**" + m.Author.String() + "** tried to speak and has now been **banned.** (" + strings.Replace(time.Now().UTC().Format(time.RFC822Z), "+0000", "UTC", -1) + ")")
+					}
+				}
+			}
+		}
+
 		help := values.Helpregex.MatchString(m.Content)
 		add := values.Addregex.MatchString(m.Content) && values.Mapregex.MatchString(m.Content)
 		acc := values.Accgraphregex.MatchString(m.Content) && (values.Mapregex.MatchString(m.Content) || len(m.Attachments) > 0 && values.Fileregex.MatchString(m.Attachments[0].Filename))
@@ -254,7 +328,7 @@ func roleHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 		log.Println(err)
 		return
 	}
-	if time.Now().Sub(timeStamp).Hours() > 1 {
+	if time.Now().Sub(timeStamp).Minutes() > 1 {
 		return
 	}
 

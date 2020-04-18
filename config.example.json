@@ -4,6 +4,7 @@
     "MessageLogChannel": "NOT REQUIRED IF NO --log",
     "JoinLogChannel": "NOT REQUIRED IF NO --log",
     "CalcChannels": [""],
+    "WhitelistRoles": [""],
     "OsuAPIKey": "",
     "PasteAPIKey": "",
     "UserID": "",
