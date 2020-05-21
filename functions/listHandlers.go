@@ -127,12 +127,12 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	beatmapID, _ := strconv.Atoi(strings.Split(mapInfo, " ")[0])
 
 	// Cmd foundation
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", "./cache/" + strings.Split(mapInfo, " ")[0] + ".osu"}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "simulate", "osu", "./cache/" + strings.Split(mapInfo, " ")[0] + ".osu"}
 	switch osuType {
 	case "joz":
-		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	case "live":
-		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	}
 
 	// Create score object and get score specs, as well as add to cmd args
@@ -496,16 +496,16 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Create args foundation
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu"}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "simulate", "osu"}
 	if values.SRregex.MatchString(m.Content) {
-		args = []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "difficulty"}
+		args = []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "difficulty"}
 	}
 
 	// Check for other osu! versions
 	if values.Jozregex.MatchString(m.Content) {
-		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	} else if values.Liveregex.MatchString(m.Content) {
-		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	}
 
 	var (
@@ -551,6 +551,23 @@ func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var PPScoreList []structs.PPScore
 	var SRScoreList []structs.SRScore
 	for _, score := range scoresNoDupe {
+		// Check if file exists
+		_, err := os.Stat("./cache/" + strconv.Itoa(score.BeatmapID) + ".osu")
+		if os.IsNotExist(err) {
+			resp, err := http.Get("https://osu.ppy.sh/osu/" + strconv.Itoa(score.BeatmapID))
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Error in obtaining the file for beatmap ID "+strconv.Itoa(score.BeatmapID))
+				continue
+			}
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			err = ioutil.WriteFile("./cache/"+strconv.Itoa(score.BeatmapID)+".osu", body, 0644)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Error in obtaining the file for beatmap ID "+strconv.Itoa(score.BeatmapID))
+				continue
+			}
+		}
+
 		tempArgs := append(args, "./cache/"+strconv.Itoa(score.BeatmapID)+".osu")
 
 		if !values.SRregex.MatchString(m.Content) {

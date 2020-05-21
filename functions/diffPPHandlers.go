@@ -28,7 +28,7 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	defer removeFiles(mapInfo, osuType)
 	mapID := strings.Split(mapInfo, " ")[0]
 
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "difficulty", "./" + mapInfo + ".osu"}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "difficulty", "./" + mapInfo + ".osu"}
 
 	// Get score specs (acc, combo, e.t.c)
 	var mods string
@@ -41,9 +41,9 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	switch osuType {
 	case "joz":
-		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	case "live":
-		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	}
 
 	if !strings.HasPrefix(mapInfo, "-1") {
@@ -206,7 +206,7 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	defer s.ChannelMessageDelete(m.ChannelID, msg.ID)
 	defer removeFiles(mapInfo, osuType)
 
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", "./" + mapInfo + ".osu"}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "simulate", "osu", "./" + mapInfo + ".osu"}
 
 	// Get score specs (acc, combo, e.t.c)
 	if values.Modregex.MatchString(m.Content) {
@@ -238,9 +238,9 @@ func MapPPHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Change osu! version
 	switch osuType {
 	case "joz":
-		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	case "live":
-		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	}
 
 	if !strings.HasPrefix(mapInfo, "-1") {

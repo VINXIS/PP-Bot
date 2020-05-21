@@ -22,7 +22,7 @@ func AccGraphHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	defer removeFiles(mapInfo, osuType)
 
 	// Create args foundation
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "simulate", "osu", "./" + mapInfo + ".osu"}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "simulate", "osu", "./" + mapInfo + ".osu"}
 
 	// Reject other osu! versions
 	if osuType == "joz" || osuType == "live" {

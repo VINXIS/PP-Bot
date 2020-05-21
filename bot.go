@@ -43,7 +43,6 @@ func main() {
 		_, err := os.Stat("./cache")
 		if os.IsNotExist(err) {
 			err = os.MkdirAll("./cache", 0755)
-
 		}
 
 		// Create lists folder

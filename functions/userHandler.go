@@ -57,7 +57,7 @@ func UserHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	timeTaken := time.Now()
 
 	// Create args
-	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll", "profile", strconv.Itoa(user.UserID), values.Conf.OsuAPIKey}
+	args := []string{"./osu-tools/delta/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll", "profile", strconv.Itoa(user.UserID), values.Conf.OsuAPIKey}
 
 	// Get score specs (acc, combo, e.t.c)
 	if values.Modregex.MatchString(m.Content) {
@@ -69,9 +69,9 @@ func UserHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	switch osuType {
 	case "joz":
-		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/joz/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	case "live":
-		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp2.0/PerformanceCalculator.dll"
+		args[0] = "./osu-tools/live/osu-tools/PerformanceCalculator/bin/Release/netcoreapp3.1/PerformanceCalculator.dll"
 	}
 
 	// Run command
