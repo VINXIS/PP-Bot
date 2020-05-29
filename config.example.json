@@ -5,6 +5,7 @@
     "JoinLogChannel": "NOT REQUIRED IF NO --log",
     "CalcChannels": [""],
     "WhitelistRoles": [""],
+    "OnionRoles": [""],
     "OsuAPIKey": "",
     "PasteAPIKey": "",
     "UserID": "",

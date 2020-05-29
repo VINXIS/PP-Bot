@@ -132,7 +132,7 @@ func AccGraphHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 		Content: m.Author.Mention() + "\n" + mapInfo,
 		Files: []*discordgo.File{
-			&discordgo.File{
+			{
 				Name:   mapInfo + ".png",
 				Reader: imgBytes,
 			},

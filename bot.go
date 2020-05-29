@@ -157,8 +157,17 @@ func normalMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func logMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if message in calc channel
+	found := false
+	for _, ch := range values.Conf.CalcChannels {
+		if ch == m.ChannelID {
+			found = true
+			break
+		}
+	}
+
 	// Check if the message is to even be bothered to read
-	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
+	if found && (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 
 		// Check if user has whitelist role
 		for _, role := range m.Member.Roles {
@@ -235,8 +244,17 @@ func logMessageEditHandler(s *discordgo.Session, m *discordgo.MessageUpdate) {
 		return
 	}
 
+	// Check if message in calc channel
+	found := false
+	for _, ch := range values.Conf.CalcChannels {
+		if ch == m.ChannelID {
+			found = true
+			break
+		}
+	}
+
 	// Check if the message is to even be bothered to read
-	if (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
+	if found && (m.GuildID == values.Conf.ServerID || values.OutsideServerregex.MatchString(m.Content)) && m.Author.ID != s.State.User.ID {
 
 		// Check if user has whitelist role
 		for _, role := range m.Member.Roles {

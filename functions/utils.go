@@ -142,3 +142,15 @@ func sendPaste(s *discordgo.Session, m *discordgo.MessageCreate, pasteData struc
 
 	s.ChannelMessageSend(m.ChannelID, m.Author.Mention()+"\n<"+pasteResult.Link+">\n"+text)
 }
+
+// listAccess determines if the user is allowed to use the list functions
+func listAccess(s *discordgo.Session, m *discordgo.MessageCreate) (allowed bool) {
+	for _, role := range m.Member.Roles {
+		for _, whitelist := range values.Conf.OnionRoles {
+			if whitelist == role {
+				return true
+			}
+		}
+	}
+	return false
+}

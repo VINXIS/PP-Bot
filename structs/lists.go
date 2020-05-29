@@ -53,7 +53,7 @@ func GetList(u *discordgo.User) (List, bool) {
 	newList := List{
 		User: *u,
 		Lists: []SubList{
-			SubList{
+			{
 				Name: "Untitled",
 			},
 		},

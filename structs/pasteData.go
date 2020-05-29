@@ -24,7 +24,7 @@ type PasteResult struct {
 func NewPasteData(username, content string) PasteData {
 	return PasteData{
 		sections: []section{
-			section{
+			{
 				name:     "PP Changes for " + username,
 				contents: content,
 			},

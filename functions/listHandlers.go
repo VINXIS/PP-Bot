@@ -22,6 +22,13 @@ import (
 
 // ListHandler gives the user theirs or someone else's list
 func ListHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if they are allowed to use the list function
+	allowed := listAccess(s, m)
+	if !allowed {
+		s.ChannelMessageSend(m.ChannelID, "You do not have the required roles to use this function!")
+		return
+	}
+
 	// Check for mention
 	user := m.Author
 	if len(m.Mentions) >= 1 {
@@ -98,6 +105,13 @@ func ListHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // ListAddHandler lets the user add a map to their list
 func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if they are allowed to use the list function
+	allowed := listAccess(s, m)
+	if !allowed {
+		s.ChannelMessageSend(m.ChannelID, "You do not have the required roles to use this function!")
+		return
+	}
+
 	// Get file and sublist name
 	list, _ := structs.GetList(m.Author)
 	subListName := "Untitled"
@@ -250,6 +264,13 @@ func ListAddHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // ListMoveHandler lets the move scores between lists
 func ListMoveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if they are allowed to use the list function
+	allowed := listAccess(s, m)
+	if !allowed {
+		s.ChannelMessageSend(m.ChannelID, "You do not have the required roles to use this function!")
+		return
+	}
+
 	if !values.Numregex.MatchString(m.Content) || !values.Newregex.MatchString(m.Content) {
 		s.ChannelMessageSend(m.ChannelID, "Please provide index number and target list!")
 		return
@@ -362,6 +383,13 @@ func ListMoveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // ListDeleteHandler lets the user delete a map from a sublist
 func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if they are allowed to use the list function
+	allowed := listAccess(s, m)
+	if !allowed {
+		s.ChannelMessageSend(m.ChannelID, "You do not have the required roles to use this function!")
+		return
+	}
+
 	// Get list
 	list, new := structs.GetList(m.Author)
 	if new {
@@ -407,7 +435,7 @@ func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 			Content: "Since you are deleting your lists completely, here is a copy of your file so you can reimport it back whenever you want, by attaching it to a message stating `!import`.",
 			Files: []*discordgo.File{
-				&discordgo.File{
+				{
 					Name:   m.Author.ID + ".json",
 					Reader: f,
 				},
@@ -472,6 +500,13 @@ func ListDeleteHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // ListRunHandler lets the user run their list
 func ListRunHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Check if they are allowed to use the list function
+	allowed := listAccess(s, m)
+	if !allowed {
+		s.ChannelMessageSend(m.ChannelID, "You do not have the required roles to use this function!")
+		return
+	}
+
 	if values.SRregex.MatchString(m.Content) && values.Jozregex.MatchString(m.Content) {
 		s.ChannelMessageSend(m.ChannelID, "Printing SR values for lists only works for delta and live at the moment.")
 		return

@@ -184,7 +184,7 @@ func MapDifficultyHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
 		Content: m.Author.Mention() + "\n```\n" + strings.ToValidUTF8(string(res), "") + "```",
 		Files: []*discordgo.File{
-			&discordgo.File{
+			{
 				Name:   mapID + ".png",
 				Reader: imgBytes,
 			},
