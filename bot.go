@@ -356,9 +356,9 @@ func roleHandler(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 	}
 	roleAction := roleLog.Changes[0].Key
 	roleName := roleLog.Changes[0].NewValue.([]interface{})[0].(map[string]interface{})["name"].(string)
-	if roleAction == "$add" {
+	if *roleAction == discordgo.AuditLogChangeKeyRoleAdd {
 		s.ChannelMessageSend(values.Conf.RoleLogChannel, "The user **"+roleAffectedUser.String()+"** has been given the **"+roleName+"** role!")
-	} else if roleAction == "$remove" {
+	} else if *roleAction == discordgo.AuditLogChangeKeyRoleRemove {
 		s.ChannelMessageSend(values.Conf.RoleLogChannel, "The user **"+roleAffectedUser.String()+"** has lost the **"+roleName+"** role!")
 	}
 }
